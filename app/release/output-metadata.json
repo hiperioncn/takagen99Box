@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.bilibili.bilithings",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 888,
+      "versionName": "8.8.8.20230519_0952",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

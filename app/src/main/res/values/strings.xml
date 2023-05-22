@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVBox</string>
+    <string name="app_name">LP Film</string>
     <string name="app_home">Home</string>
     <string name="app_source"></string>
 
@@ -26,6 +26,7 @@
     <string name="hm_cache_del">Cache Cleared</string>
 
     // Play Detail Page //
+    <string name="det_title">Film</string>
     <string name="det_play">Play</string>
     <string name="det_expand">Expand</string>
     <string name="det_search">Search</string>
@@ -46,6 +47,8 @@
     <string name="det_dir">Director</string>
     <string name="det_des"></string>
 
+    //push
+    <string name="push_title">Push</string>
     // Settings Menu Page //
     <string name="mn_config">Configuration Address</string>
     <string name="mn_home">Source</string>

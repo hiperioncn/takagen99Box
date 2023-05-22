@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVBox</string>
+    <string name="app_name">零跑影视</string>
     <string name="app_home">首页</string>
     <string name="app_source"></string>
 
@@ -23,9 +23,10 @@
     <string name="hm_style_line">一行显示</string>
     <string name="hm_style_grid">多行显示</string>
     <string name="hm_hist_del">已删除当前记录</string>
-    <string name="hm_cache_del">已删除缓存</string>
+    <string name="hm_cache_del">清理缓存成功</string>
 
     // Play Detail Page //
+    <string name="det_title">影片</string>
     <string name="det_play">播放</string>
     <string name="det_expand">全屏</string>
     <string name="det_search">快搜</string>
@@ -45,7 +46,8 @@
     <string name="det_actor">演员</string>
     <string name="det_dir">导演</string>
     <string name="det_des"></string>
-
+    //push
+    <string name="push_title">推送</string>
     // Settings Menu Page //
     <string name="mn_config">配置地址</string>
     <string name="mn_home">数据源</string>

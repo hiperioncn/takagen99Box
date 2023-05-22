@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -31,6 +32,7 @@ import java.util.List;
  * @description:
  */
 public class HistoryActivity extends BaseActivity {
+    private LinearLayout titleLayout;
     private TextView tvDel;
     private TextView tvDelTip;
     private TvRecyclerView mGridView;
@@ -63,6 +65,7 @@ public class HistoryActivity extends BaseActivity {
 
     private void initView() {
         EventBus.getDefault().register(this);
+        titleLayout = findViewById(R.id.titleLayout);
         tvDel = findViewById(R.id.tvDel);
         tvDelTip = findViewById(R.id.tvDelTip);
         mGridView = findViewById(R.id.mGridView);
@@ -70,6 +73,14 @@ public class HistoryActivity extends BaseActivity {
         mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 5 : 6));
         historyAdapter = new HistoryAdapter();
         mGridView.setAdapter(historyAdapter);
+
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         tvDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

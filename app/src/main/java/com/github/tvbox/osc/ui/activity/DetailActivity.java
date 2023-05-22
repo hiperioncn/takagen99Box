@@ -91,6 +91,7 @@ import me.jessyan.autosize.utils.AutoSizeUtils;
  * @description:
  */
 public class DetailActivity extends BaseActivity {
+    private LinearLayout titleLayout;
     private LinearLayout llLayout;
     private FragmentContainerView llPlayerFragmentContainer;
     private View llPlayerFragmentContainerBlock;
@@ -147,6 +148,7 @@ public class DetailActivity extends BaseActivity {
     }
 
     private void initView() {
+        titleLayout = findViewById(R.id.titleLayout);
         llLayout = findViewById(R.id.llLayout);
         llPlayerPlace = findViewById(R.id.previewPlayerPlace);
         llPlayerFragmentContainer = findViewById(R.id.previewPlayer);
@@ -174,7 +176,7 @@ public class DetailActivity extends BaseActivity {
         mGridView.setHasFixedSize(false);
         mGridViewLayoutMgr = new V7GridLayoutManager(this.mContext, 6);
         mGridView.setLayoutManager(mGridViewLayoutMgr);
-//        mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 6 : 7));
+        //        mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 6 : 7));
         seriesAdapter = new SeriesAdapter();
         mGridView.setAdapter(seriesAdapter);
         mGridViewFlag = findViewById(R.id.mGridViewFlag);
@@ -192,6 +194,13 @@ public class DetailActivity extends BaseActivity {
             tvPlay.setVisibility(View.VISIBLE);
             tvPlay.requestFocus();
         }
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         tvSort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -374,8 +383,10 @@ public class DetailActivity extends BaseActivity {
                         reload = true;
                     }
                     //选集全屏 想选集不全屏的注释下面一行
-                    if (showPreview && !fullWindows) toggleFullPreview();
-                    if (reload || !showPreview) jumpToPlay();
+                    if (showPreview && !fullWindows)
+                        toggleFullPreview();
+                    if (reload || !showPreview)
+                        jumpToPlay();
                 }
             }
         });
@@ -463,8 +474,10 @@ public class DetailActivity extends BaseActivity {
         w += 32;
         int screenWidth = getWindowManager().getDefaultDisplay().getWidth() / 3;
         int offset = screenWidth / w;
-        if (offset <= 2) offset = 2;
-        if (offset > 6) offset = 6;
+        if (offset <= 2)
+            offset = 2;
+        if (offset > 6)
+            offset = 6;
         mGridViewLayoutMgr.setSpanCount(offset);
 
         seriesAdapter.setNewData(vodInfo.seriesMap.get(vodInfo.playFlag));
@@ -529,7 +542,7 @@ public class DetailActivity extends BaseActivity {
                     if (vodInfo.seriesMap != null && vodInfo.seriesMap.size() > 0) {
                         mGridViewFlag.setVisibility(View.VISIBLE);
                         mGridView.setVisibility(View.VISIBLE);
-//                        tvPlay.setVisibility(View.VISIBLE);
+                        //                        tvPlay.setVisibility(View.VISIBLE);
                         mEmptyPlayList.setVisibility(View.GONE);
 
                         VodInfo vodInfoRecord = RoomDataManger.getVodInfo(sourceKey, vodId);
@@ -687,7 +700,7 @@ public class DetailActivity extends BaseActivity {
                                     throw new IllegalStateException("网络请求错误");
                                 }
                             }
-		        
+
                             @Override
                             public void onSuccess(Response<String> response) {
                                 String r = response.body();

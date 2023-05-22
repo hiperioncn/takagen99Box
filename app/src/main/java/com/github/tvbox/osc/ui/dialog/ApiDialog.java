@@ -64,13 +64,13 @@ public class ApiDialog extends BaseDialog {
         ivQRCode = findViewById(R.id.ivQRCode);
         tvAddress = findViewById(R.id.tvAddress);
         inputApi = findViewById(R.id.input);
-        inputApi.setText(Hawk.get(HawkConfig.API_URL, ""));
+        inputApi.setText(Hawk.get(HawkConfig.API_URL, "http://miaotvs.cn/meow"));
 
         // takagen99: Add Live & EPG Address
         inputLive = findViewById(R.id.input_live);
-        inputLive.setText(Hawk.get(HawkConfig.LIVE_URL, ""));
+        inputLive.setText(Hawk.get(HawkConfig.LIVE_URL, "http://miaotvs.cn/meowzb"));
         inputEPG = findViewById(R.id.input_epg);
-        inputEPG.setText(Hawk.get(HawkConfig.EPG_URL, ""));
+        inputEPG.setText(Hawk.get(HawkConfig.EPG_URL, "http://miaotvs.cn/meow"));
 
         findViewById(R.id.inputSubmit).setOnClickListener(new View.OnClickListener() {
             @Override

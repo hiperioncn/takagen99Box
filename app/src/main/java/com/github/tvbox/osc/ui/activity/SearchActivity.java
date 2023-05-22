@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -70,6 +71,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SearchActivity extends BaseActivity {
     private LinearLayout llLayout;
+    private LinearLayout titleLayout;
     private TvRecyclerView mGridView;
     private TvRecyclerView mGridViewWord;
     SourceViewModel sourceViewModel;
@@ -123,6 +125,7 @@ public class SearchActivity extends BaseActivity {
 
     private void initView() {
         EventBus.getDefault().register(this);
+        titleLayout = findViewById(R.id.titleLayout);
         llLayout = findViewById(R.id.llLayout);
         etSearch = findViewById(R.id.etSearch);
         tvSearch = findViewById(R.id.tvSearch);
@@ -138,6 +141,13 @@ public class SearchActivity extends BaseActivity {
         wordAdapter = new PinyinAdapter();
         mGridViewWord.setAdapter(wordAdapter);
         // Allow Dpad Key switch to other focus
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         etSearch.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
@@ -463,12 +473,14 @@ public class SearchActivity extends BaseActivity {
     }
 
     private boolean matchSearchResult(String name, String searchTitle) {
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(searchTitle)) return false;
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(searchTitle))
+            return false;
         searchTitle = searchTitle.trim();
         String[] arr = searchTitle.split("\\s+");
         int matchNum = 0;
         for (String one : arr) {
-            if (name.contains(one)) matchNum++;
+            if (name.contains(one))
+                matchNum++;
         }
         return matchNum == arr.length;
     }

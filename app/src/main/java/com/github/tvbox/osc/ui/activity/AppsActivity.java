@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AppsActivity extends BaseActivity {
+    private LinearLayout titleLayout;
     private TextView tvDel;
     private TextView tvDelTip;
     private TvRecyclerView mGridViewApps;
@@ -83,6 +85,7 @@ public class AppsActivity extends BaseActivity {
 
     private void initView() {
         EventBus.getDefault().register(this);
+        titleLayout = findViewById(R.id.titleLayout);
         tvDel = findViewById(R.id.tvDel);
         tvDelTip = findViewById(R.id.tvDelTip);
         mGridViewApps = findViewById(R.id.mGridViewApps);
@@ -90,6 +93,13 @@ public class AppsActivity extends BaseActivity {
         mGridViewApps.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 6 : 7));
         appsAdapter = new AppsAdapter();
         mGridViewApps.setAdapter(appsAdapter);
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         tvDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

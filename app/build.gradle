@@ -8,11 +8,12 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId 'com.github.tvbox.osc.tk'
+//        applicationId 'com.github.tvbox.osc.tk'
+        applicationId 'com.bilibili.bilithings'
         minSdkVersion 16
         targetSdkVersion 33
-        versionCode 1
-        versionName "1.0.".concat(buildTime())
+        versionCode 888
+        versionName "8.8.8.".concat(buildTime())
         multiDexEnabled true
         //设置room的Schema的位置
         javaCompileOptions {

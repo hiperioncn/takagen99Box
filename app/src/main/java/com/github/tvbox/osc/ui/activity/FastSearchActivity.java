@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @description:
  */
 public class FastSearchActivity extends BaseActivity {
+    private LinearLayout titleLayout;
     private LinearLayout llLayout;
     private TextView mSearchTitle;
     private TvRecyclerView mGridView;
@@ -84,7 +85,8 @@ public class FastSearchActivity extends BaseActivity {
                     spListAdapter.onLostFocus(itemView);
                 } else {
                     int ret = spListAdapter.onSetFocus(itemView);
-                    if (ret < 0) return;
+                    if (ret < 0)
+                        return;
                     TextView v = (TextView) itemView;
                     String sb = v.getText().toString();
                     filterResult(sb);
@@ -127,6 +129,7 @@ public class FastSearchActivity extends BaseActivity {
 
     private void initView() {
         EventBus.getDefault().register(this);
+        titleLayout = findViewById(R.id.titleLayout);
         llLayout = findViewById(R.id.llLayout);
         mSearchTitle = findViewById(R.id.mSearchTitle);
         mGridView = findViewById(R.id.mGridView);
@@ -138,11 +141,18 @@ public class FastSearchActivity extends BaseActivity {
         spListAdapter = new FastListAdapter();
         mGridViewWord.setAdapter(spListAdapter);
 
-//        mGridViewWord.setFocusable(true);
-//        mGridViewWord.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View itemView, boolean hasFocus) {}
-//        });
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+        //        mGridViewWord.setFocusable(true);
+        //        mGridViewWord.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        //            @Override
+        //            public void onFocusChange(View itemView, boolean hasFocus) {}
+        //        });
 
         mGridViewWord.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
@@ -153,9 +163,9 @@ public class FastSearchActivity extends BaseActivity {
                 if (t.getText() == getString(R.string.fs_show_all)) {
                     t.requestFocus();
                 }
-//                if (child.isFocusable() && null == child.getOnFocusChangeListener()) {
-//                    child.setOnFocusChangeListener(focusChangeListener);
-//                }
+                //                if (child.isFocusable() && null == child.getOnFocusChangeListener()) {
+                //                    child.setOnFocusChangeListener(focusChangeListener);
+                //                }
             }
 
             @Override
@@ -255,9 +265,11 @@ public class FastSearchActivity extends BaseActivity {
             return;
         }
         String key = spNames.get(spName);
-        if (key.isEmpty()) return;
+        if (key.isEmpty())
+            return;
 
-        if (searchFilterKey == key) return;
+        if (searchFilterKey == key)
+            return;
         searchFilterKey = key;
 
         List<Movie.Video> list = resultVods.get(key);
@@ -267,7 +279,8 @@ public class FastSearchActivity extends BaseActivity {
     }
 
     private void fenci() {
-        if (!quickSearchWord.isEmpty()) return; // 如果经有分词了，不再进行二次分词
+        if (!quickSearchWord.isEmpty())
+            return; // 如果经有分词了，不再进行二次分词
         // 分词
         OkGo.<String>get("http://api.pullword.com/get.php?source=" + URLEncoder.encode(searchTitle) + "&param1=0&param2=0&json=1")
                 .tag("fenci")
@@ -329,7 +342,7 @@ public class FastSearchActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void refresh(RefreshEvent event) {
         if (mSearchTitle != null) {
-//            mSearchTitle.setText(String.format(getString(R.string.fs_results) + " : %d/%d", finishedCount, spNames.size()));
+            //            mSearchTitle.setText(String.format(getString(R.string.fs_results) + " : %d/%d", finishedCount, spNames.size()));
             finishedCount = searchAdapter.getData().size();
             mSearchTitle.setText(String.format(getString(R.string.fs_results) + " : %d", finishedCount));
         }
@@ -431,7 +444,8 @@ public class FastSearchActivity extends BaseActivity {
                     name = n;
                 }
             }
-            if (name == "") return key;
+            if (name == "")
+                return key;
 
             List<String> names = spListAdapter.getData();
             for (int i = 0; i < names.size(); ++i) {

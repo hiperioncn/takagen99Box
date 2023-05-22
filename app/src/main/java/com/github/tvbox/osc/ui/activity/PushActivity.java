@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.tvbox.osc.R;
@@ -16,6 +17,7 @@ import com.github.tvbox.osc.ui.tv.QRCodeGen;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class PushActivity extends BaseActivity {
+    private LinearLayout titleLayout;
     private ImageView ivQRCode;
     private TextView tvAddress;
 
@@ -31,9 +33,17 @@ public class PushActivity extends BaseActivity {
     }
 
     private void initView() {
+        titleLayout = findViewById(R.id.titleLayout);
         ivQRCode = findViewById(R.id.ivQRCode);
         tvAddress = findViewById(R.id.tvAddress);
         refreshQRCode();
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         findViewById(R.id.pushLocal).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

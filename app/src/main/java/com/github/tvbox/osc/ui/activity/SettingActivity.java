@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.viewpager.widget.ViewPager;
@@ -65,6 +66,7 @@ public class SettingActivity extends BaseActivity {
         sortAdapter = new SettingMenuAdapter();
         mGridView.setAdapter(sortAdapter);
         mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 1, false));
+
         sortAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {

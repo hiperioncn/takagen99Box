@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,7 +65,7 @@ import java.util.Locale;
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
 public class DriveActivity extends BaseActivity {
-
+    private LinearLayout titleLayout;
     private TextView txtTitle;
     private TvRecyclerView mGridView;
     private ImageButton btnAddServer;
@@ -96,6 +97,8 @@ public class DriveActivity extends BaseActivity {
 
     private void initView() {
         EventBus.getDefault().register(this);
+
+        titleLayout = findViewById(R.id.titleLayout);
         this.txtTitle = findViewById(R.id.textView);
         this.btnAddServer = findViewById(R.id.btnAddServer);
         this.mGridView = findViewById(R.id.mGridView);
@@ -104,6 +107,14 @@ public class DriveActivity extends BaseActivity {
         footLoading = getLayoutInflater().inflate(R.layout.item_search_lite, null);
         footLoading.findViewById(R.id.tvName).setVisibility(View.GONE);
         this.btnRemoveServer.setColorFilter(ContextCompat.getColor(mContext, R.color.color_FFFFFF));
+
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         this.btnRemoveServer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

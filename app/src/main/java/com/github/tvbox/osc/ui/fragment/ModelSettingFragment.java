@@ -58,6 +58,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * @description:
  */
 public class ModelSettingFragment extends BaseLazyFragment {
+    private LinearLayout titleLayout;
     private TextView tvDebugOpen;
     private TextView tvApi;
     // Home Section
@@ -97,10 +98,11 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
     @Override
     protected void init() {
+        titleLayout = findViewById(R.id.titleLayout);
         tvDebugOpen = findViewById(R.id.tvDebugOpen);
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "开启" : "关闭");
         tvApi = findViewById(R.id.tvApi);
-        tvApi.setText(Hawk.get(HawkConfig.API_URL, ""));
+        tvApi.setText(Hawk.get(HawkConfig.API_URL, "点击配置资源URL"));
         // Home Section
         tvHomeApi = findViewById(R.id.tvHomeApi);
         tvHomeApi.setText(ApiConfig.get().getHomeSourceBean().getName());
@@ -137,7 +139,13 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
         //takagen99 : Set HomeApi as default
         findViewById(R.id.llHomeApi).requestFocus();
-
+        //标题栏添加点击返回事件
+        titleLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().onBackPressed();
+            }
+        });
         findViewById(R.id.llDebug).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -206,15 +214,18 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 FastClickCheckUtil.check(v);
                 List<SourceBean> sites = new ArrayList<>();
                 for (SourceBean sb : ApiConfig.get().getSourceBeanList()) {
-                    if (sb.getHide() == 0) sites.add(sb);
+                    if (sb.getHide() == 0)
+                        sites.add(sb);
                 }
                 if (sites.size() > 0) {
                     SelectDialog<SourceBean> dialog = new SelectDialog<>(mActivity);
 
                     // Multi Column Selection
                     int spanCount = (int) Math.floor(sites.size() / 10);
-                    if (spanCount <= 1) spanCount = 1;
-                    if (spanCount >= 3) spanCount = 3;
+                    if (spanCount <= 1)
+                        spanCount = 1;
+                    if (spanCount >= 3)
+                        spanCount = 3;
 
                     TvRecyclerView tvRecyclerView = dialog.findViewById(R.id.list);
                     tvRecyclerView.setLayoutManager(new V7GridLayoutManager(dialog.getContext(), spanCount));
@@ -230,6 +241,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                         public void click(SourceBean value, int pos) {
                             ApiConfig.get().setSourceBean(value);
                             tvHomeApi.setText(ApiConfig.get().getHomeSourceBean().getName());
+                            dialog.dismiss();
                         }
 
                         @Override
@@ -247,6 +259,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
                             return oldItem.getKey().equals(newItem.getKey());
                         }
                     }, sites, sites.indexOf(ApiConfig.get().getHomeSourceBean()));
+                    dialog.setCancelable(true);
+                    dialog.setCanceledOnTouchOutside(true);
                     dialog.show();
                 }
             }
