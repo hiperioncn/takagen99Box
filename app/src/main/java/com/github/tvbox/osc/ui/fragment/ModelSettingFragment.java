@@ -102,7 +102,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvDebugOpen = findViewById(R.id.tvDebugOpen);
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "开启" : "关闭");
         tvApi = findViewById(R.id.tvApi);
-        tvApi.setText(Hawk.get(HawkConfig.API_URL, "点击配置资源URL"));
+        tvApi.setText(Hawk.get(HawkConfig.API_URL, "点击右侧按钮配置或切换URL"));
         // Home Section
         tvHomeApi = findViewById(R.id.tvHomeApi);
         tvHomeApi.setText(ApiConfig.get().getHomeSourceBean().getName());
@@ -178,16 +178,29 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
+
+
         findViewById(R.id.llApiHistory).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //如果历史记录为空，即未设置过api，则默认显示内置几个api
                 ArrayList<String> history = Hawk.get(HawkConfig.API_HISTORY, new ArrayList<String>());
-                if (history.isEmpty())
-                    return;
+                if (history.isEmpty()) {
+                    //内置api历史
+                    history.add("http://我不是.肥猫.love:63/接口禁止贩卖");
+                    //history.add("https://freed.yuanhsing.cf/TVBox/meowcf.json");
+                    history.add("https://raw.liucn.cc/box/m.json");
+                    history.add("http://miaotvs.cn/meow");
+                    Hawk.put(HawkConfig.API_HISTORY, history);
+                    Hawk.put(HawkConfig.API_URL, "http://我不是.肥猫.love:63/接口禁止贩卖");
+                }
                 String current = Hawk.get(HawkConfig.API_URL, "");
+                //默认显示第一个api
+                tvApi.setText(current);
                 int idx = 0;
-                if (history.contains(current))
+                if (history.contains(current)) {
                     idx = history.indexOf(current);
+                }
                 ApiHistoryDialog dialog = new ApiHistoryDialog(getContext());
                 dialog.setTip(getString(R.string.dia_history_list));
                 dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
