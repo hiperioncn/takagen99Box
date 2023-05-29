@@ -9,7 +9,9 @@ android {
 
     defaultConfig {
 //        applicationId 'com.github.tvbox.osc.tk'
-        applicationId 'com.bilibili.bilithings'
+//        applicationId 'com.bilibili.bilithings'
+        applicationId 'com.ss.android.ugc.aweme' //抖音
+//        applicationId 'cn.cmvideo.car.play' //咪咕视频
         minSdkVersion 16
         targetSdkVersion 33
         versionCode 888

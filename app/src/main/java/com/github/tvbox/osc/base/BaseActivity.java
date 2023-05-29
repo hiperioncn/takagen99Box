@@ -146,6 +146,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     }
 
     public void hideSystemUI(boolean shownavbar) {
+        //这个必须设置，否则不生效。
+        //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        //            getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        //        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             int uiVisibility = getWindow().getDecorView().getSystemUiVisibility();
             uiVisibility |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
@@ -159,7 +163,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
             }
             getWindow().getDecorView().setSystemUiVisibility(uiVisibility);
             // set content behind navigation bar
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
     }
 
