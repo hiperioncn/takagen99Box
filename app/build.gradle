@@ -6,13 +6,9 @@ def static buildTime() {
 
 android {
     compileSdk 33
-
     defaultConfig {
-//        applicationId 'com.github.tvbox.osc.tk'
-//        applicationId 'com.bilibili.bilithings'
-        applicationId 'com.ss.android.ugc.aweme' //抖音
-//        applicationId 'cn.cmvideo.car.play' //咪咕视频
-        minSdkVersion 16
+        applicationId 'cn.cmvideo.car.play'
+        minSdkVersion 17
         targetSdkVersion 33
         versionCode 888
         versionName "8.8.8.".concat(buildTime())

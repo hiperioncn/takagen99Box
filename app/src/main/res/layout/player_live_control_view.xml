@@ -85,6 +85,7 @@
             android:id="@+id/tv_top_line1_hide"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/vs_50"
             android:orientation="horizontal">
 
             <TextView
@@ -107,6 +108,7 @@
                 android:textStyle="bold"
                 android:visibility="visible" />
 
+            <!-- 右上角网速显示 -->
             <LinearLayout
                 android:id="@+id/tv_speed_top_hide"
                 android:layout_width="@dimen/vs_120"
@@ -149,7 +151,7 @@
                     android:textSize="@dimen/ts_16"
                     android:textStyle="bold" />
             </LinearLayout>
-
+            <!-- 网速后面loading 图标-->
             <LinearLayout
                 android:id="@+id/tv_spin_top_hide"
                 android:layout_width="@dimen/vs_45"
