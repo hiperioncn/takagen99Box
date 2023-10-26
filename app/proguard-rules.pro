@@ -185,8 +185,8 @@
 -dontwarn tv.danmaku.ijk.**
 
 # ExoPlayer
--keep class com.google.android.exoplayer2.** { *; }
--dontwarn com.google.android.exoplayer2.**
+-keep class com.google.androidx.media3.exoplayer.** { *; }
+-dontwarn com.google.androidx.media3.exoplayer.**
 
 # sardine webdav
 -keep class com.thegrizzlylabs.sardineandroid.** { *; }
@@ -216,6 +216,15 @@
 -keep class com.xunlei.downloadlib.** {*;}
 
 # quickjs引擎
--keep class com.github.tvbox.quickjs.** {*;}
+-keep class com.whl.quickjs.** {*;}
+
 # 支持影视的ali相关的jar
 -keep class com.google.gson.**{*;}
+
+#阿里云播放器
+-keep class com.alivc.**{*;}
+-keep class com.aliyun.**{*;}
+-keep class com.cicada.**{*;}
+-dontwarn com.alivc.**
+-dontwarn com.aliyun.**
+-dontwarn com.cicada.**

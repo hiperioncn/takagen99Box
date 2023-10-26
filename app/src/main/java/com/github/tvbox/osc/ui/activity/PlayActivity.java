@@ -36,7 +36,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -47,11 +46,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.media3.common.Player;
+import androidx.media3.common.text.Cue;
 import androidx.recyclerview.widget.DiffUtil;
 
+import com.acsbendi.requestinspectorwebview.RequestInspectorWebViewClient;
+import com.acsbendi.requestinspectorwebview.WebViewRequest;
 import com.github.catvod.crawler.Spider;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
+import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.base.BaseActivity;
 import com.github.tvbox.osc.bean.ParseBean;
 import com.github.tvbox.osc.bean.SourceBean;
@@ -68,6 +72,7 @@ import com.github.tvbox.osc.player.controller.VodController;
 import com.github.tvbox.osc.player.thirdparty.Kodi;
 import com.github.tvbox.osc.player.thirdparty.MXPlayer;
 import com.github.tvbox.osc.player.thirdparty.ReexPlayer;
+import com.github.tvbox.osc.server.RemoteServer;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SearchSubtitleDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
@@ -77,13 +82,13 @@ import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.OkGoHelper;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.VideoParseRuler;
 import com.github.tvbox.osc.util.XWalkUtils;
+import com.github.tvbox.osc.util.thunder.Jianpian;
 import com.github.tvbox.osc.util.thunder.Thunder;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.text.Cue;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -93,8 +98,8 @@ import com.lzy.okgo.model.HttpHeaders;
 import com.lzy.okgo.model.Response;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 import com.orhanobut.hawk.Hawk;
-import com.github.tvbox.quickjs.JSUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -111,6 +116,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -119,9 +125,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import me.jessyan.autosize.AutoSize;
+import okhttp3.Cache;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkTimedText;
 import xyz.doikki.videoplayer.player.AbstractPlayer;
@@ -143,6 +155,8 @@ public class PlayActivity extends BaseActivity {
 
     private String videoURL;
 
+    private List<String> videoSegmentationURL = new ArrayList<>();
+
     @Override
     protected int getLayoutResID() {
         return R.layout.activity_play;
@@ -163,11 +177,9 @@ public class PlayActivity extends BaseActivity {
         mHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
-                switch (msg.what) {
-                    case 100:
-                        stopParse();
-                        errorWithRetry("嗅探错误", false);
-                        break;
+                if (msg.what == 100) {
+                    stopParse();
+                    errorWithRetry("嗅探错误", false);
                 }
                 return false;
             }
@@ -194,7 +206,7 @@ public class PlayActivity extends BaseActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                long skip = st * 1000;
+                long skip = st * 1000L;
                 if (CacheManager.getCache(MD5.string2MD5(url)) == null) {
                     return skip;
                 }
@@ -208,6 +220,15 @@ public class PlayActivity extends BaseActivity {
         mController.setListener(new VodController.VodControlListener() {
             @Override
             public void playNext(boolean rmProgress) {
+                if (videoSegmentationURL.size() > 0) {
+                    for (int i = 0; i < videoSegmentationURL.size() - 1; i++) {
+                        if (videoSegmentationURL.get(i).equals(videoURL)) {
+                            mVideoView.setPlayFromZeroPositionOnce(true);
+                            startPlayUrl(videoSegmentationURL.get(i + 1), new HashMap<>());//todo header
+                            return;
+                        }
+                    }
+                }
                 if (mVodInfo.reverseSort) {
                     PlayActivity.this.playPrevious();
                 } else {
@@ -220,6 +241,15 @@ public class PlayActivity extends BaseActivity {
 
             @Override
             public void playPre() {
+                if (videoSegmentationURL.size() > 0) {
+                    for (int i = 1; i < videoSegmentationURL.size(); i++) {
+                        if (videoSegmentationURL.get(i).equals(videoURL)) {
+                            mVideoView.setPlayFromZeroPositionOnce(true);
+                            startPlayUrl(videoSegmentationURL.get(i - 1), new HashMap<>());//todo header
+                            return;
+                        }
+                    }
+                }
                 if (mVodInfo.reverseSort) {
                     PlayActivity.this.playNext(false);
                 } else {
@@ -445,7 +475,7 @@ public class PlayActivity extends BaseActivity {
 
             @Override
             public String getDisplay(TrackInfoBean val) {
-                return val.name + (JSUtils.isEmpty(val.language) ? "" : " " + val.language);
+                return val.name + (val.language.isEmpty() ? "" : " " + val.language);
             }
         }, new DiffUtil.ItemCallback<TrackInfoBean>() {
             @Override
@@ -516,7 +546,7 @@ public class PlayActivity extends BaseActivity {
                 String name = val.name.replace("AUDIO,", "");
                 name = name.replace("N/A,", "");
                 name = name.replace(" ", "");
-                return name + (JSUtils.isEmpty(val.language) ? "" : " " + val.language);
+                return name + (val.language.isEmpty() ? "" : " " + val.language);
             }
         }, new DiffUtil.ItemCallback<TrackInfoBean>() {
             @Override
@@ -572,7 +602,220 @@ public class PlayActivity extends BaseActivity {
         }
     }
 
+    private void yxdm(String url, Map<String, String> headers) {
+        if (url.startsWith("https://www.ziyuantt.com/") && url.endsWith(".mp4")) {
+            int st = url.indexOf("&url=");
+            if (st > 1) {
+                String[] urls = url.substring(st + 5).split("\\|");
+                if (urls.length < 2)
+                    return;
+                stopLoadWebView(false);
+                videoSegmentationURL.clear();
+                videoSegmentationURL.addAll(Arrays.asList(urls));
+                HashMap<String, String> hm = new HashMap<>();
+                if (headers != null && headers.keySet().size() > 0) {
+                    for (String k : headers.keySet()) {
+                        hm.put(k, " " + headers.get(k));
+                    }
+                }
+                startPlayUrl(videoSegmentationURL.get(0), hm);
+            }
+        }
+    }
+
+    private String removeMinorityUrl(String tsUrlPre, String m3u8content) {
+        if (!m3u8content.startsWith("#EXTM3U"))
+            return null;
+        String linesplit = "\n";
+        if (m3u8content.contains("\r\n"))
+            linesplit = "\r\n";
+        String[] lines = m3u8content.split(linesplit);
+
+        HashMap<String, Integer> preUrlMap = new HashMap<>();
+        for (String line : lines) {
+            if (line.length() == 0 || line.charAt(0) == '#') {
+                continue;
+            }
+            int ilast = line.lastIndexOf('.');
+            if (ilast <= 4) {
+                continue;
+            }
+            String preUrl = line.substring(0, ilast - 4);
+            Integer cnt = preUrlMap.get(preUrl);
+            if (cnt != null) {
+                preUrlMap.put(preUrl, cnt + 1);
+            } else {
+                preUrlMap.put(preUrl, 1);
+            }
+        }
+        if (preUrlMap.size() <= 1)
+            return null;
+        if (preUrlMap.size() > 5)
+            return null;//too many different url, can not identify ads url
+        int maxTimes = 0;
+        String maxTimesPreUrl = "";
+        for (Map.Entry<String, Integer> entry : preUrlMap.entrySet()) {
+            if (entry.getValue() > maxTimes) {
+                maxTimesPreUrl = entry.getKey();
+                maxTimes = entry.getValue();
+            }
+        }
+        if (maxTimes == 0)
+            return null;
+
+        boolean dealedExtXKey = false;
+        for (int i = 0; i < lines.length; ++i) {
+            if (!dealedExtXKey && lines[i].startsWith("#EXT-X-KEY")) {
+                String keyUrl = StringUtils.substringBetween(lines[i], "URI=\"", "\"");
+                if (keyUrl != null && !keyUrl.startsWith("http://") && !keyUrl.startsWith("https://")) {
+                    String newKeyUrl;
+                    if (keyUrl.charAt(0) == '/') {
+                        int ifirst = tsUrlPre.indexOf('/', 9);//skip https://, http://
+                        newKeyUrl = tsUrlPre.substring(0, ifirst) + keyUrl;
+                    } else
+                        newKeyUrl = tsUrlPre + keyUrl;
+                    lines[i] = lines[i].replace("URI=\"" + keyUrl + "\"", "URI=\"" + newKeyUrl + "\"");
+                }
+                dealedExtXKey = true;
+            }
+            if (lines[i].length() == 0 || lines[i].charAt(0) == '#') {
+                continue;
+            }
+            if (lines[i].startsWith(maxTimesPreUrl)) {
+                if (!lines[i].startsWith("http://") && !lines[i].startsWith("https://")) {
+                    if (lines[i].charAt(0) == '/') {
+                        int ifirst = tsUrlPre.indexOf('/', 9);//skip https://, http://
+                        lines[i] = tsUrlPre.substring(0, ifirst) + lines[i];
+                    } else
+                        lines[i] = tsUrlPre + lines[i];
+                }
+            } else {
+                if (i > 0 && lines[i - 1].length() > 0 && lines[i - 1].charAt(0) == '#') {
+                    lines[i - 1] = "";
+                }
+                lines[i] = "";
+            }
+        }
+        return String.join(linesplit, lines);
+    }
+
     void playUrl(String url, HashMap<String, String> headers) {
+        if (!Hawk.get(HawkConfig.VIDEO_PURIFY, true)) {
+            startPlayUrl(url, headers);
+            return;
+        }
+        if (!url.contains("://127.0.0.1/") && !url.contains(".m3u8")) {
+            startPlayUrl(url, headers);
+            return;
+        }
+        OkGo.getInstance().cancelTag("m3u8-1");
+        OkGo.getInstance().cancelTag("m3u8-2");
+        //remove ads in m3u8
+        HttpHeaders hheaders = new HttpHeaders();
+        if (headers != null) {
+            for (Map.Entry<String, String> s : headers.entrySet()) {
+                hheaders.put(s.getKey(), s.getValue());
+            }
+        }
+        OkGo.<String>get(url)
+                .tag("m3u8-1")
+                .headers(hheaders)
+                .execute(new AbsCallback<String>() {
+                    @Override
+                    public void onSuccess(com.lzy.okgo.model.Response<String> response) {
+                        String content = response.body();
+                        if (!content.startsWith("#EXTM3U")) {
+                            startPlayUrl(url, headers);
+                            return;
+                        }
+
+                        String[] lines = null;
+                        if (content.contains("\r\n"))
+                            lines = content.split("\r\n", 10);
+                        else
+                            lines = content.split("\n", 10);
+                        String forwardurl = "";
+                        boolean dealedFirst = false;
+                        for (String line : lines) {
+                            if (!"".equals(line) && line.charAt(0) != '#') {
+                                if (dealedFirst) {
+                                    //跳转行后还有内容，说明不需要跳转
+                                    forwardurl = "";
+                                    break;
+                                }
+                                if (line.endsWith(".m3u8") || line.contains(".m3u8?")) {
+                                    if (line.startsWith("http://") || line.startsWith("https://")) {
+                                        forwardurl = line;
+                                    } else if (line.charAt(0) == '/') {
+                                        int ifirst = url.indexOf('/', 9);//skip https://, http://
+                                        forwardurl = url.substring(0, ifirst) + line;
+                                    } else {
+                                        int ilast = url.lastIndexOf('/');
+                                        forwardurl = url.substring(0, ilast + 1) + line;
+                                    }
+                                }
+                                dealedFirst = true;
+                            }
+                        }
+                        if ("".equals(forwardurl)) {
+                            int ilast = url.lastIndexOf('/');
+
+                            RemoteServer.m3u8Content = removeMinorityUrl(url.substring(0, ilast + 1), content);
+                            if (RemoteServer.m3u8Content == null)
+                                startPlayUrl(url, headers);
+                            else {
+                                startPlayUrl("http://127.0.0.1:" + RemoteServer.serverPort + "/m3u8", headers);
+                                //Toast.makeText(getContext(), "已移除视频广告", Toast.LENGTH_SHORT).show();
+                            }
+                            return;
+                        }
+                        final String finalforwardurl = forwardurl;
+                        OkGo.<String>get(forwardurl)
+                                .tag("m3u8-2")
+                                .headers(hheaders)
+                                .execute(new AbsCallback<String>() {
+                                    @Override
+                                    public void onSuccess(com.lzy.okgo.model.Response<String> response) {
+                                        String content = response.body();
+                                        int ilast = finalforwardurl.lastIndexOf('/');
+                                        RemoteServer.m3u8Content = removeMinorityUrl(finalforwardurl.substring(0, ilast + 1), content);
+
+                                        if (RemoteServer.m3u8Content == null)
+                                            startPlayUrl(finalforwardurl, headers);
+                                        else {
+                                            startPlayUrl("http://127.0.0.1:" + RemoteServer.serverPort + "/m3u8", headers);
+                                            //Toast.makeText(getContext(), "已移除视频广告", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public String convertResponse(okhttp3.Response response) throws Throwable {
+                                        return response.body().string();
+                                    }
+
+                                    @Override
+                                    public void onError(com.lzy.okgo.model.Response<String> response) {
+                                        super.onError(response);
+                                        startPlayUrl(url, headers);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public String convertResponse(okhttp3.Response response) throws Throwable {
+                        return response.body().string();
+                    }
+
+                    @Override
+                    public void onError(com.lzy.okgo.model.Response<String> response) {
+                        super.onError(response);
+                        startPlayUrl(url, headers);
+                    }
+                });
+    }
+
+
+    void startPlayUrl(String url, HashMap<String, String> headers) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -958,6 +1201,8 @@ public class PlayActivity extends BaseActivity {
         }
         stopLoadWebView(true);
         stopParse();
+        Thunder.stop(false); // 停止磁力下载
+        Jianpian.finish();//停止p2p下载
     }
 
     private VodInfo mVodInfo;
@@ -1052,10 +1297,12 @@ public class PlayActivity extends BaseActivity {
         mController.setTitle(playTitleInfo);
 
         stopParse();
-        if (mVideoView != null)
+
+        if (mVideoView != null) {
             mVideoView.release();
-        String subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.playIndex + "-" + vs.name + "-subt";
-        String progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.playIndex;
+        }
+        subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.playIndex + "-" + vs.name + "-subt";
+        progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.playIndex;
         //重新播放清除现有进度
         if (reset) {
             CacheManager.delete(MD5.string2MD5(progressKey), 0);
@@ -1079,6 +1326,17 @@ public class PlayActivity extends BaseActivity {
             playUrl(vs.url.replace("tvbox-drive://", ""), headers);
             return;
         }
+        if (Jianpian.isJpUrl(vs.url)) {//荐片地址特殊判断
+            String jp_url = vs.url;
+            mController.showParse(false);
+            if (vs.url.startsWith("tvbox-xg:")) {
+                jp_url = jp_url.replace("tvbox-xg://", "tvbox-xg:");
+                playUrl(Jianpian.JPUrlDec(jp_url.substring(9)), null);
+            } else {
+                playUrl(Jianpian.JPUrlDec(jp_url), null);
+            }
+            return;
+        }
         if (Thunder.play(vs.url, new Thunder.ThunderCallback() {
             @Override
             public void status(int code, String info) {
@@ -1090,7 +1348,7 @@ public class PlayActivity extends BaseActivity {
             }
 
             @Override
-            public void list(String playList) {
+            public void list(Map<Integer, String> urlMap) {
             }
 
             @Override
@@ -1218,8 +1476,9 @@ public class PlayActivity extends BaseActivity {
                                 reqHeaders.put(key, headerJson.optString(key, ""));
                             }
                         }
-                        if (reqHeaders.size() > 0)
+                        if (reqHeaders.size() > 0) {
                             webHeaderMap = reqHeaders;
+                        }
                     }
                 } catch (Throwable e) {
                     e.printStackTrace();
@@ -1420,10 +1679,10 @@ public class PlayActivity extends BaseActivity {
     private XWalkWebClient mX5WebClient;
     private WebView mSysWebView;
     private SysWebClient mSysWebClient;
-    private Map<String, Boolean> loadedUrls = new HashMap<>();
+    private final Map<String, Boolean> loadedUrls = new HashMap<>();
     private LinkedList<String> loadFoundVideoUrls = new LinkedList<>();
     private HashMap<String, HashMap<String, String>> loadFoundVideoUrlsHeader = new HashMap<>();
-    private AtomicInteger loadFoundCount = new AtomicInteger(0);
+    private final AtomicInteger loadFoundCount = new AtomicInteger(0);
 
     void loadWebView(String url) {
         if (mSysWebView == null && mXwalkWebView == null) {
@@ -1534,10 +1793,14 @@ public class PlayActivity extends BaseActivity {
         if (url.contains("url=http") || url.contains(".html")) {
             return false;
         }
-        if (sourceBean.getType() == 3) {
-            Spider sp = ApiConfig.get().getCSP(sourceBean);
-            if (sp != null && sp.manualVideoCheck())
-                return sp.isVideoFormat(url);
+        try {
+            if (sourceBean.getType() == 3) {
+                Spider sp = ApiConfig.get().getCSP(sourceBean);
+                if (sp != null && sp.manualVideoCheck())
+                    return sp.isVideoFormat(url);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return VideoParseRuler.checkIsVideoForParse(webUrl, url);
     }
@@ -1605,11 +1868,7 @@ public class PlayActivity extends BaseActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             settings.setMediaPlaybackRequiresUserGesture(false);
         }
-        if (Hawk.get(HawkConfig.DEBUG_OPEN, false)) {
-            settings.setBlockNetworkImage(false);
-        } else {
-            settings.setBlockNetworkImage(true);
-        }
+        settings.setBlockNetworkImage(!Hawk.get(HawkConfig.DEBUG_OPEN, false));
         settings.setUseWideViewPort(true);
         settings.setDomStorageEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
@@ -1649,12 +1908,16 @@ public class PlayActivity extends BaseActivity {
                 return true;
             }
         });
-        mSysWebClient = new SysWebClient();
+        mSysWebClient = new SysWebClient(mSysWebView);
         webView.setWebViewClient(mSysWebClient);
         webView.setBackgroundColor(Color.BLACK);
     }
 
-    private class SysWebClient extends WebViewClient {
+    private class SysWebClient extends RequestInspectorWebViewClient {
+
+        public SysWebClient(@NonNull WebView webView) {
+            super(webView);
+        }
 
         @Override
         public void onReceivedSslError(WebView webView, SslErrorHandler sslErrorHandler, SslError sslError) {
@@ -1684,8 +1947,9 @@ public class PlayActivity extends BaseActivity {
             if (!click.isEmpty()) {
                 String selector;
                 if (click.contains(";")) {
-                    if (!url.contains(click.split(";")[0]))
+                    if (!url.contains(click.split(";")[0])) {
                         return;
+                    }
                     selector = click.split(";")[1];
                 } else {
                     selector = click.trim();
@@ -1695,7 +1959,7 @@ public class PlayActivity extends BaseActivity {
             }
         }
 
-        WebResourceResponse checkIsVideo(String url, HashMap<String, String> headers) {
+        WebResourceResponse checkIsVideo(String url, WebViewRequest request) {
             if (url.endsWith("/favicon.ico")) {
                 if (url.startsWith("http://127.0.0.1")) {
                     return new WebResourceResponse("image/x-icon", "UTF-8", null);
@@ -1719,24 +1983,106 @@ public class PlayActivity extends BaseActivity {
 
             if (!ad) {
                 if (checkVideoFormat(url)) {
+                    HashMap<String, String> webHeaders = new HashMap<>();
+                    Map<String, String> hds = request.getHeaders();
+                    if (hds != null && hds.keySet().size() > 0) {
+                        for (String k : hds.keySet()) {
+                            if (k.equalsIgnoreCase("user-agent")
+                                    || k.equalsIgnoreCase("referer")
+                                    || k.equalsIgnoreCase("origin")) {
+                                webHeaders.put(k, " " + hds.get(k));
+                            }
+                        }
+                    }
+
                     loadFoundVideoUrls.add(url);
-                    loadFoundVideoUrlsHeader.put(url, headers);
+                    loadFoundVideoUrlsHeader.put(url, webHeaders);
                     LOG.i("loadFoundVideoUrl:" + url);
                     if (loadFoundCount.incrementAndGet() == 1) {
                         url = loadFoundVideoUrls.poll();
                         mHandler.removeMessages(100);
                         String cookie = CookieManager.getInstance().getCookie(url);
-                        if (!TextUtils.isEmpty(cookie))
-                            headers.put("Cookie", " " + cookie);//携带cookie
-                        playUrl(url, headers);
+                        if (!TextUtils.isEmpty(cookie)) {
+                            webHeaders.put("Cookie", " " + cookie);//携带cookie
+                        }
+                        playUrl(url, webHeaders);
                         stopLoadWebView(false);
                     }
                 }
             }
 
-            return ad || loadFoundCount.get() > 0 ?
-                    AdBlocker.createEmptyResource() :
-                    null;
+            if (ad || loadFoundCount.get() > 0) {
+                return AdBlocker.createEmptyResource();
+            }
+            yxdm(url, request.getHeaders());
+            if ("POST".equals(request.getMethod())) {
+                if (request.getBody().isEmpty())//得不到jquery.post内容，后面再看看第三方webview类有没有更新
+                {
+                    return null;
+                }
+            } else if (!"GET".equals(request.getMethod())) {
+                return null;
+            }
+            try {
+                Request.Builder requestBuilder = new Request.Builder().url(url);
+                for (Map.Entry<String, String> entrySet : request.getHeaders().entrySet()) {
+                    requestBuilder.addHeader(entrySet.getKey(), entrySet.getValue());
+                }
+                if ("POST".equals(request.getMethod())) {
+                    String encType = request.getEnctype();
+                    if (encType == null) {
+                        encType = "application/x-www-form-urlencoded";
+                    }
+                    requestBuilder.post(RequestBody.create(MediaType.get(encType + "; charset=utf-8"), request.getBody()));
+                }
+                OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+                clientBuilder.readTimeout(10000, TimeUnit.MILLISECONDS);
+                clientBuilder.writeTimeout(10000, TimeUnit.MILLISECONDS);
+                clientBuilder.connectTimeout(10000, TimeUnit.MILLISECONDS);
+                clientBuilder.followRedirects(false);
+                clientBuilder.followSslRedirects(false);
+                clientBuilder.cache(new Cache(new File(App.getInstance().getCacheDir().getAbsolutePath(), "xiutancache"), 10 * 1024 * 1024));
+                okhttp3.Response response = clientBuilder.build().newCall(requestBuilder.build()).execute();
+
+                final String contentTypeValue = response.header("Content-Type");
+                String responsePhase = OkGoHelper.httpPhaseMap.get(response.code());
+                if (responsePhase == null) {
+                    responsePhase = "Internal Server Error";
+                }
+                if (contentTypeValue != null) {
+                    if (contentTypeValue.indexOf("charset=") > 0) {
+                        final String[] contentTypeAndEncoding = contentTypeValue.replace(" ", "").split(";");
+                        final String contentType = contentTypeAndEncoding[0];
+                        String charset = null;
+                        if (contentTypeAndEncoding.length >= 2) {
+                            String[] csArray = contentTypeAndEncoding[1].split("=");
+                            if (csArray.length >= 2) {
+                                charset = csArray[1];
+                            }
+                        }
+                        return new WebResourceResponse(contentType, charset, response.code(), responsePhase, request.getHeaders(), response.body().byteStream());
+                    } else {
+                        return new WebResourceResponse(contentTypeValue, null, response.code(), responsePhase, request.getHeaders(), response.body().byteStream());
+                    }
+                } else {
+                    String guessMimeType = "application/octet-stream";
+                    if (url.contains(".htm")) {
+                        guessMimeType = "text/html";
+                    } else if (url.contains(".css")) {
+                        guessMimeType = "text/css";
+                    } else if (url.contains(".js")) {
+                        guessMimeType = "application/javascript";
+                    } else if (url.endsWith(".png")) {
+                        guessMimeType = "image/png";
+                    } else if (url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+                        guessMimeType = "image/jpeg";
+                    }
+                    return new WebResourceResponse(guessMimeType, null, response.code(), responsePhase, request.getHeaders(), response.body().byteStream());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
 
         @Nullable
@@ -1748,21 +2094,22 @@ public class PlayActivity extends BaseActivity {
         @Nullable
         @Override
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            String url = request.getUrl().toString();
+        public WebResourceResponse shouldInterceptRequest(WebView view, WebViewRequest request) {
+            String url = request.getUrl();
             LOG.i("shouldInterceptRequest url:" + url);
-            HashMap<String, String> webHeaders = new HashMap<>();
-            Map<String, String> hds = request.getRequestHeaders();
-            if (hds != null && hds.keySet().size() > 0) {
-                for (String k : hds.keySet()) {
-                    if (k.equalsIgnoreCase("user-agent")
-                            || k.equalsIgnoreCase("referer")
-                            || k.equalsIgnoreCase("origin")) {
-                        webHeaders.put(k, " " + hds.get(k));
-                    }
-                }
-            }
-            return checkIsVideo(url, webHeaders);
+            //            HashMap<String, String> webHeaders = new HashMap<>();
+            //            Map<String, String> hds = request.getRequestHeaders();
+            //            if (hds != null && hds.keySet().size() > 0) {
+            //                for (String k : hds.keySet()) {
+            //                    if (k.equalsIgnoreCase("user-agent")
+            //                            || k.equalsIgnoreCase("referer")
+            //                            || k.equalsIgnoreCase("origin")) {
+            //                        webHeaders.put(k, " " + hds.get(k));
+            //                    }
+            //                }
+            //            }
+            //            return checkIsVideo(url, webHeaders);
+            return checkIsVideo(url, request);
         }
 
         @Override
@@ -1794,11 +2141,7 @@ public class PlayActivity extends BaseActivity {
         settings.setDomStorageEnabled(true);
         settings.setJavaScriptEnabled(true);
 
-        if (Hawk.get(HawkConfig.DEBUG_OPEN, false)) {
-            settings.setBlockNetworkImage(false);
-        } else {
-            settings.setBlockNetworkImage(true);
-        }
+        settings.setBlockNetworkImage(!Hawk.get(HawkConfig.DEBUG_OPEN, false));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             settings.setMediaPlaybackRequiresUserGesture(false);

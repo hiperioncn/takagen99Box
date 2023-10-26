@@ -4,12 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -33,8 +33,9 @@ import java.util.List;
 
 public class AppsActivity extends BaseActivity {
     private LinearLayout titleLayout;
-    private TextView tvDel;
+    //    private TextView tvDel;
     private TextView tvDelTip;
+    private ImageView tvDelete;
     private TvRecyclerView mGridViewApps;
     private AppsAdapter appsAdapter;
     private boolean delMode = false;
@@ -80,27 +81,29 @@ public class AppsActivity extends BaseActivity {
         tvDelTip.setVisibility(delMode ? View.VISIBLE : View.GONE);
 
         // takagen99: Added Theme Color
-        tvDel.setTextColor(delMode ? getThemeColor() : Color.WHITE);
+        //        tvDel.setTextColor(delMode ? getThemeColor() : Color.WHITE);
     }
 
     private void initView() {
         EventBus.getDefault().register(this);
         titleLayout = findViewById(R.id.titleLayout);
-        tvDel = findViewById(R.id.tvDel);
+        //        tvDel = findViewById(R.id.tvDel);
         tvDelTip = findViewById(R.id.tvDelTip);
+        tvDelete = findViewById(R.id.tvDelete);
         mGridViewApps = findViewById(R.id.mGridViewApps);
         mGridViewApps.setHasFixedSize(true);
         mGridViewApps.setLayoutManager(new V7GridLayoutManager(this.mContext, isBaseOnWidth() ? 6 : 7));
         appsAdapter = new AppsAdapter();
         mGridViewApps.setAdapter(appsAdapter);
         //标题栏添加点击返回事件
-        titleLayout.setOnClickListener(new View.OnClickListener(){
+        titleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
             }
         });
-        tvDel.setOnClickListener(new View.OnClickListener() {
+        //        tvDel.setOnClickListener(new View.OnClickListener() {
+        tvDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleDelMode();
@@ -110,8 +113,8 @@ public class AppsActivity extends BaseActivity {
             @Override
             public boolean onInBorderKeyEvent(int direction, View focused) {
                 if (direction == View.FOCUS_UP) {
-                    tvDel.setFocusable(true);
-                    tvDel.requestFocus();
+                    tvDelete.setFocusable(true);
+                    tvDelete.requestFocus();
                 }
                 return false;
             }
@@ -161,7 +164,7 @@ public class AppsActivity extends BaseActivity {
         appsAdapter.setOnItemLongClickListener(new BaseQuickAdapter.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(BaseQuickAdapter adapter, View view, int position) {
-                tvDel.setFocusable(true);
+                tvDelete.setFocusable(true);
                 toggleDelMode();
                 return true;
             }
@@ -171,27 +174,27 @@ public class AppsActivity extends BaseActivity {
     private void initData() {
 
         // Method 1 (Direct)
-//        List<AppInfo> items = new ArrayList<>();
-//        PackageManager pm = getPackageManager();
-//        List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
-//
-//        for (ApplicationInfo app : apps) {
-//            if(pm.getLaunchIntentForPackage(app.packageName) != null) {
-//                // apps with launcher intent
-//                if((app.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
-//                    // updated system apps
-//                } else if ((app.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
-//                    // system apps
-//                } else {
-//                    // user installed apps & not equal to self
-//                    if (!app.packageName.equals(App.getInstance().getPackageName())) {
-//                        items.add(AppInfo.get(app));
-//                    }
-//                }
-//            }
-//            AppInfo.Sorter.sort(items);
-//            appsAdapter.setNewData(items);
-//        }
+        //        List<AppInfo> items = new ArrayList<>();
+        //        PackageManager pm = getPackageManager();
+        //        List<ApplicationInfo> apps = pm.getInstalledApplications(PackageManager.GET_META_DATA);
+        //
+        //        for (ApplicationInfo app : apps) {
+        //            if(pm.getLaunchIntentForPackage(app.packageName) != null) {
+        //                // apps with launcher intent
+        //                if((app.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
+        //                    // updated system apps
+        //                } else if ((app.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
+        //                    // system apps
+        //                } else {
+        //                    // user installed apps & not equal to self
+        //                    if (!app.packageName.equals(App.getInstance().getPackageName())) {
+        //                        items.add(AppInfo.get(app));
+        //                    }
+        //                }
+        //            }
+        //            AppInfo.Sorter.sort(items);
+        //            appsAdapter.setNewData(items);
+        //        }
 
         // Method 2 (Test)
         List<AppInfo> appInfos = getInstallApps(getApplicationContext());
@@ -202,7 +205,7 @@ public class AppsActivity extends BaseActivity {
         appsAdapter.setNewData(appInfos);
 
         // Method 3 (via Async)
-//        mApplicationLoader.execute();
+        //        mApplicationLoader.execute();
 
     }
 
@@ -258,7 +261,7 @@ public class AppsActivity extends BaseActivity {
         // if clicked and App is already uninstalled
         if (isUnInstallClicked && !appInstalledOrNot(packageName)) {
             appsAdapter.remove(appPosition);
-//            EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_APP_REFRESH));
+            //            EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_APP_REFRESH));
         }
     }
 
