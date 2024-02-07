@@ -20,6 +20,7 @@ import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.activity.DriveActivity;
 import com.github.tvbox.osc.ui.activity.FastSearchActivity;
 import com.github.tvbox.osc.ui.activity.HistoryActivity;
+import com.github.tvbox.osc.ui.activity.HomeActivity;
 import com.github.tvbox.osc.ui.activity.LivePlayActivity;
 import com.github.tvbox.osc.ui.activity.PushActivity;
 import com.github.tvbox.osc.ui.activity.SearchActivity;
@@ -54,6 +55,7 @@ import java.util.List;
  */
 public class UserFragment extends BaseLazyFragment implements View.OnClickListener {
     private LinearLayout tvDrive;
+    private LinearLayout tvFile;
     private LinearLayout tvLive;
     private LinearLayout tvSearch;
     private LinearLayout tvSetting;
@@ -120,6 +122,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
     protected void init() {
         EventBus.getDefault().register(this);
         tvDrive = findViewById(R.id.tvDrive);
+        tvFile = findViewById(R.id.tvFile);
         tvLive = findViewById(R.id.tvLive);
         tvSearch = findViewById(R.id.tvSearch);
         tvSetting = findViewById(R.id.tvSetting);
@@ -127,6 +130,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvHistory = findViewById(R.id.tvHistory);
         tvPush = findViewById(R.id.tvPush);
         tvDrive.setOnClickListener(this);
+        tvFile.setOnClickListener(this);
         tvLive.setOnClickListener(this);
         tvSearch.setOnClickListener(this);
         tvSetting.setOnClickListener(this);
@@ -134,6 +138,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
         tvPush.setOnClickListener(this);
         tvCollect.setOnClickListener(this);
         tvDrive.setOnFocusChangeListener(focusChangeListener);
+        tvFile.setOnFocusChangeListener(focusChangeListener);
         tvLive.setOnFocusChangeListener(focusChangeListener);
         tvSearch.setOnFocusChangeListener(focusChangeListener);
         tvSetting.setOnFocusChangeListener(focusChangeListener);
@@ -345,6 +350,31 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
             jumpActivity(CollectActivity.class);
         } else if (v.getId() == R.id.tvDrive) {
             jumpActivity(DriveActivity.class);
+        } else if (v.getId() == R.id.tvFile) {
+            openPackageName();
+        }
+    }
+
+    /**
+     * 打开指定包名app
+     */
+    public void openPackageName() {
+        String current = Hawk.get(HawkConfig.SHORTCUT_PACKAGE, "");
+        try {
+            //方式一
+            //            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            //            //系统调用Action属性
+            //            intent.setType("*/*");
+            //            //设置文件类型
+            //            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            //            // 添加Category属性
+            //            startActivity(intent);
+            //方式二 com.android.documentsui
+
+            Intent intent = mContext.getPackageManager().getLaunchIntentForPackage(current);
+            mContext.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(mActivity, "打开包名:" + current + " 失败，确认是否配置正确", Toast.LENGTH_SHORT).show();
         }
     }
 

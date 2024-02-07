@@ -1,5 +1,6 @@
 package com.github.tvbox.osc.ui.fragment;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import com.github.tvbox.osc.ui.dialog.ApiHistoryDialog;
 import com.github.tvbox.osc.ui.dialog.BackupDialog;
 import com.github.tvbox.osc.ui.dialog.HomeIconDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
+import com.github.tvbox.osc.ui.dialog.ShortcutDialog;
 import com.github.tvbox.osc.ui.dialog.XWalkInitDialog;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
@@ -61,9 +63,10 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private LinearLayout titleLayout;
     private TextView tvDebugOpen;
     private TextView tvApi;
+    private TextView tvShortcut;
     // Home Section
     private TextView tvHomeApi;
-	private TextView tvHomeDefaultShow;
+    private TextView tvHomeDefaultShow;
     private TextView tvHomeShow;
     private TextView tvHomeIcon;
     private TextView tvHomeRec;
@@ -140,7 +143,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvSearchView.setText(getSearchView(Hawk.get(HawkConfig.SEARCH_VIEW, 0)));
         tvDns = findViewById(R.id.tvDns);
         tvDns.setText(OkGoHelper.dnsHttpsList.get(Hawk.get(HawkConfig.DOH_URL, 0)));
-		tvHomeDefaultShow = findViewById(R.id.tvHomeDefaultShow);
+        tvHomeDefaultShow = findViewById(R.id.tvHomeDefaultShow);
         tvHomeDefaultShow.setText(Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false) ? "开启" : "关闭");
 
         //takagen99 : Set HomeApi as default
@@ -161,6 +164,77 @@ public class ModelSettingFragment extends BaseLazyFragment {
             }
         });
         // Input Source URL ------------------------------------------------------------------------
+
+        /*
+         * 快捷包名配置
+         * */
+        findViewById(R.id.llHomeShortcut).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                ShortcutDialog dialog = new ShortcutDialog(mActivity);
+                EventBus.getDefault().register(dialog);
+                dialog.setOnListener(new ShortcutDialog.OnListener() {
+                    @Override
+                    public void onchange(String name) {
+                        Hawk.put(HawkConfig.SHORTCUT_PACKAGE, name);
+                    }
+                });
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        ((BaseActivity) mActivity).hideSystemUI(true);
+                        EventBus.getDefault().unregister(dialog);
+                    }
+                });
+                dialog.show();
+            }
+        });
+
+        /*
+         * 快捷包名配置历史
+         * */
+        findViewById(R.id.llShortcutHistory).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //如果历史记录为空，即未设置过，则默认显示内置
+                ArrayList<String> history = Hawk.get(HawkConfig.SHORTCUT_HISTORY, new ArrayList<String>());
+                if (history.isEmpty()) {
+                    //默认打开系统设置
+                    history.add("com.android.settings");
+                    history.add("com.android.documentsui");
+                    history.add("com.sec.android.app.myfiles");
+
+                    Hawk.put(HawkConfig.SHORTCUT_HISTORY, history);
+                    Hawk.put(HawkConfig.SHORTCUT_PACKAGE, "com.android.settings");
+                }
+                String current = Hawk.get(HawkConfig.SHORTCUT_PACKAGE, "");
+                //默认显示第一个api
+                //                tvApi.setText(current);
+                int idx = 0;
+                if (history.contains(current)) {
+                    idx = history.indexOf(current);
+                }
+                ApiHistoryDialog dialog = new ApiHistoryDialog(getContext());
+                dialog.setTip(getString(R.string.dia_history_list));
+                dialog.setAdapter(new ApiHistoryDialogAdapter.SelectDialogInterface() {
+                    @Override
+                    public void click(String api) {
+                        Hawk.put(HawkConfig.SHORTCUT_PACKAGE, api);
+                        //                        tvApi.setText(api);
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void del(String value, ArrayList<String> data) {
+                        Hawk.put(HawkConfig.SHORTCUT_HISTORY, data);
+                    }
+                }, history, idx);
+                dialog.show();
+            }
+        });
+
+        //配置接口API相关方法
         findViewById(R.id.llApi).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -184,8 +258,6 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
-
-
         findViewById(R.id.llApiHistory).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,12 +265,12 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 ArrayList<String> history = Hawk.get(HawkConfig.API_HISTORY, new ArrayList<String>());
                 if (history.isEmpty()) {
                     //内置api历史
+                    history.add("http://饭太硬.top/tv");
                     history.add("http://我不是.肥猫.love:63/接口禁止贩卖");
-                    //history.add("https://freed.yuanhsing.cf/TVBox/meowcf.json");
                     history.add("https://raw.liucn.cc/box/m.json");
                     history.add("http://miaotvs.cn/meow");
                     Hawk.put(HawkConfig.API_HISTORY, history);
-                    Hawk.put(HawkConfig.API_URL, "http://我不是.肥猫.love:63/接口禁止贩卖");
+                    Hawk.put(HawkConfig.API_URL, "http://饭太硬.top/tv");
                 }
                 String current = Hawk.get(HawkConfig.API_URL, "");
                 //默认显示第一个api
@@ -811,8 +883,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
-		
-		findViewById(R.id.llHomeLive).setOnClickListener(new View.OnClickListener() {
+
+        findViewById(R.id.llHomeLive).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);

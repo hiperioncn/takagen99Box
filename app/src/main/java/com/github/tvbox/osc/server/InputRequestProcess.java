@@ -58,6 +58,10 @@ public class InputRequestProcess implements RequestProcess {
                             mDataReceiver.onPushReceived(params.get("url").trim());
                             break;
                         }
+                        case "package": {
+                            mDataReceiver.onPackageNameReceived(params.get("name").trim());
+                            break;
+                        }
                         case "mirror": {
                             //推送当前电影、电视剧……
                             mDataReceiver.onMirrorReceived(params.get("id").trim(), params.get("sourceKey").trim());

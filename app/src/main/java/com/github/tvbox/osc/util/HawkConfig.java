@@ -12,7 +12,11 @@ public class HawkConfig {
     public static final String PUSH_TO_PORT = "push_to_port"; // 推送到地址的端口
     // URL Configurations
     public static final String API_URL = "api_url";
+
     public static final String API_HISTORY = "api_history";
+
+    public static final String SHORTCUT_PACKAGE = "shortcut_package";
+    public static final String SHORTCUT_HISTORY = "shortcut_history";
     public static final String LIVE_URL = "live_url";
     public static final String LIVE_HISTORY = "live_history";
     public static final String EPG_URL = "epg_url";
@@ -28,7 +32,7 @@ public class HawkConfig {
     public static final String HOME_LOCALE = "language";                 // 0 中文 1 英文
     public static final String HOME_SEARCH_POSITION = "search_position"; // true=Up, false=Down
     public static final String HOME_MENU_POSITION = "menu_position";     // true=Up, false=Down
-	public static final String HOME_DEFAULT_SHOW = "home_default_show";  //启动时直接进直播的开关
+    public static final String HOME_DEFAULT_SHOW = "home_default_show";  //启动时直接进直播的开关
 
     // Player Settings
     public static final String SHOW_PREVIEW = "show_preview";
@@ -63,5 +67,6 @@ public class HawkConfig {
     public static boolean isDebug() {
         return Hawk.get(DEBUG_OPEN, false);
     }
+
     public static boolean hotVodDelete;
 }

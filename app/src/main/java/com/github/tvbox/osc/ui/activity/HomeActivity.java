@@ -6,6 +6,7 @@ import android.animation.AnimatorSet;
 import android.animation.IntEvaluator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -185,8 +186,8 @@ public class HomeActivity extends BaseActivity {
                     textView.getPaint().setFakeBoldText(true);
                     textView.setTextColor(HomeActivity.this.getResources().getColor(R.color.color_FFFFFF));
                     textView.invalidate();
-//                    if (!sortAdapter.getItem(position).filters.isEmpty())
-//                        view.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
+                    //                    if (!sortAdapter.getItem(position).filters.isEmpty())
+                    //                        view.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
 
                     MovieSort.SortData sortData = sortAdapter.getItem(position);
                     if (!sortData.filters.isEmpty()) {
@@ -233,9 +234,9 @@ public class HomeActivity extends BaseActivity {
         tvName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                dataInitOk = false;
-//                jarInitOk = true;
-//                showSiteSwitch();
+                //                dataInitOk = false;
+                //                jarInitOk = true;
+                //                showSiteSwitch();
                 File dir = getCacheDir();
                 FileUtils.recursiveDelete(dir);
                 dir = getExternalCacheDir();
@@ -254,6 +255,8 @@ public class HomeActivity extends BaseActivity {
         tvWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //                Intent intent = mContext.getPackageManager().getLaunchIntentForPackage("com.android.settings");
+                //                mContext.startActivity(intent);
                 startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
             }
         });
@@ -353,8 +356,9 @@ public class HomeActivity extends BaseActivity {
         // takagen99 : Switch to show / hide source title
         SourceBean home = ApiConfig.get().getHomeSourceBean();
         if (HomeShow) {
-            if (home != null && home.getName() != null && !home.getName().isEmpty())
+            if (home != null && home.getName() != null && !home.getName().isEmpty()) {
                 tvName.setText(home.getName());
+            }
         }
 
         // takagen99: If network available, check connected Wifi or Lan
@@ -401,7 +405,7 @@ public class HomeActivity extends BaseActivity {
                                 if (!useCacheConfig) {
                                     if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
                                         jumpActivity(LivePlayActivity.class);
-                                   }
+                                    }
                                     Toast.makeText(HomeActivity.this, getString(R.string.hm_ok), Toast.LENGTH_SHORT).show();
                                 }
                                 initData();
@@ -420,10 +424,11 @@ public class HomeActivity extends BaseActivity {
                         mHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if ("".equals(msg))
+                                if ("".equals(msg)) {
                                     Toast.makeText(HomeActivity.this, getString(R.string.hm_notok), Toast.LENGTH_SHORT).show();
-                                else
+                                } else {
                                     Toast.makeText(HomeActivity.this, msg, Toast.LENGTH_SHORT).show();
+                                }
                                 initData();
                             }
                         });
@@ -646,7 +651,7 @@ public class HomeActivity extends BaseActivity {
             }
         } else if (event.type == RefreshEvent.TYPE_FILTER_CHANGE) {
             if (currentView != null) {
-//                showFilterIcon((int) event.obj);
+                //                showFilterIcon((int) event.obj);
             }
         }
     }
@@ -680,11 +685,11 @@ public class HomeActivity extends BaseActivity {
             if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
                 showSiteSwitch();
             }
-//            if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-//                if () {
-//
-//                }
-//            }
+            //            if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
+            //                if () {
+            //
+            //                }
+            //            }
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
 
         }
@@ -768,15 +773,18 @@ public class HomeActivity extends BaseActivity {
     void showSiteSwitch() {
         List<SourceBean> sites = new ArrayList<>();
         for (SourceBean sb : ApiConfig.get().getSourceBeanList()) {
-            if (sb.getHide() == 0) sites.add(sb);
+            if (sb.getHide() == 0)
+                sites.add(sb);
         }
         if (sites.size() > 0) {
             SelectDialog<SourceBean> dialog = new SelectDialog<>(HomeActivity.this);
 
             // Multi Column Selection
             int spanCount = (int) Math.floor(sites.size() / 10);
-            if (spanCount <= 1) spanCount = 1;
-            if (spanCount >= 3) spanCount = 3;
+            if (spanCount <= 1)
+                spanCount = 1;
+            if (spanCount >= 3)
+                spanCount = 3;
 
             TvRecyclerView tvRecyclerView = dialog.findViewById(R.id.list);
             tvRecyclerView.setLayoutManager(new V7GridLayoutManager(dialog.getContext(), spanCount));
@@ -812,14 +820,14 @@ public class HomeActivity extends BaseActivity {
             dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-//                    if (homeSourceKey != null && !homeSourceKey.equals(Hawk.get(HawkConfig.HOME_API, ""))) {
-//                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-//                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                        Bundle bundle = new Bundle();
-//                        bundle.putBoolean("useCache", true);
-//                        intent.putExtras(bundle);
-//                        HomeActivity.this.startActivity(intent);
-//                    }
+                    //                    if (homeSourceKey != null && !homeSourceKey.equals(Hawk.get(HawkConfig.HOME_API, ""))) {
+                    //                        Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                    //                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    //                        Bundle bundle = new Bundle();
+                    //                        bundle.putBoolean("useCache", true);
+                    //                        intent.putExtras(bundle);
+                    //                        HomeActivity.this.startActivity(intent);
+                    //                    }
                 }
             });
             dialog.show();
@@ -835,13 +843,13 @@ public class HomeActivity extends BaseActivity {
         HomeActivity.this.startActivity(intent);
     }
 
-//    public void onClick(View v) {
-//        FastClickCheckUtil.check(v);
-//        if (v.getId() == R.id.tvFind) {
-//            jumpActivity(SearchActivity.class);
-//        } else if (v.getId() == R.id.tvMenu) {
-//            jumpActivity(SettingActivity.class);
-//        }
-//    }
+    //    public void onClick(View v) {
+    //        FastClickCheckUtil.check(v);
+    //        if (v.getId() == R.id.tvFind) {
+    //            jumpActivity(SearchActivity.class);
+    //        } else if (v.getId() == R.id.tvMenu) {
+    //            jumpActivity(SettingActivity.class);
+    //        }
+    //    }
 
 }

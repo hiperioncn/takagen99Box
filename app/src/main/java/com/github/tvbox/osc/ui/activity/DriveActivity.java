@@ -109,7 +109,7 @@ public class DriveActivity extends BaseActivity {
         this.btnRemoveServer.setColorFilter(ContextCompat.getColor(mContext, R.color.color_FFFFFF));
 
         //标题栏添加点击返回事件
-        titleLayout.setOnClickListener(new View.OnClickListener(){
+        titleLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
@@ -348,8 +348,9 @@ public class DriveActivity extends BaseActivity {
     };
 
     private void openFilePicker() {
-        if (delMode)
+        if (delMode) {
             toggleDelMode();
+        }
         ChooserDialog dialog = new ChooserDialog(mContext, R.style.FileChooserStyle);
         dialog
                 .withStringResources("选择一个文件夹", "确定", "取消")
@@ -401,7 +402,7 @@ public class DriveActivity extends BaseActivity {
         delMode = !delMode;
         if (delMode) {
             // takagen99: Added Theme Color
-//            this.btnRemoveServer.setColorFilter(ContextCompat.getColor(mContext, R.color.color_theme));
+            //            this.btnRemoveServer.setColorFilter(ContextCompat.getColor(mContext, R.color.color_theme));
             this.btnRemoveServer.setColorFilter(getThemeColor());
         } else {
             this.btnRemoveServer.setColorFilter(ContextCompat.getColor(mContext, R.color.color_FFFFFF));
@@ -485,7 +486,7 @@ public class DriveActivity extends BaseActivity {
                 });
             }
         });
-        if(StringUtils.isNotEmpty(path)) {
+        if (StringUtils.isNotEmpty(path)) {
             this.txtTitle.setText(path);
         }
     }

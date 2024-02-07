@@ -17,7 +17,8 @@
     <string name="hm_live">LiveTV</string>
     <string name="hm_search">Search</string>
     <string name="hm_push">Push</string>
-    <string name="hm_file">Drives</string>
+    <string name="hm_drive">Drives</string>
+    <string name="hm_file">Shortcut</string>
     <string name="hm_fav">Favorite</string>
     <string name="hm_setting">Menu</string>
     <string name="hm_style_line">Line View</string>

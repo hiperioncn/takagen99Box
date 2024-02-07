@@ -106,6 +106,11 @@ public class ControlManager {
                         mContext.sendBroadcast(intent);
                     }
                 }
+
+                @Override
+                public void onPackageNameReceived(String packageName) {
+                    EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_PACKAGE_NAME_CHANGE, packageName));
+                }
             });
             try {
                 mServer.start();

@@ -1,7 +1,9 @@
 function search() {
     doAction('search', { word: $('#search_key_word').val() });
 }
-
+function package() {
+    doAction('package', { name: $('#diy_package_name').val() });
+}
 function api() {
     doAction('api', { url: $('#diy_api_url').val() });
 }
