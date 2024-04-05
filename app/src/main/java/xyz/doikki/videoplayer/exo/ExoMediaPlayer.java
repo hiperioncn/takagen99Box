@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.net.TrafficStats;
+import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -18,18 +19,25 @@ import androidx.media3.exoplayer.DefaultLoadControl;
 import androidx.media3.exoplayer.DefaultRenderersFactory;
 import androidx.media3.exoplayer.ExoPlayer;
 import androidx.media3.exoplayer.LoadControl;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import androidx.media3.exoplayer.source.MediaSource;
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector;
 import androidx.media3.exoplayer.trackselection.TrackSelectionArray;
+import androidx.media3.extractor.ExtractorsFactory;
+import androidx.media3.ui.PlayerView;
 
 import com.github.tvbox.osc.base.App;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
+import com.github.tvbox.osc.util.PlayerHelper;
 import com.orhanobut.hawk.Hawk;
 
+import java.util.Locale;
 import java.util.Map;
 
+import io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory;
 import xyz.doikki.videoplayer.player.AbstractPlayer;
+import xyz.doikki.videoplayer.util.PlayerUtils;
 
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
@@ -52,6 +60,8 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     private long lastTotalRxBytes = 0;
     private long lastTimeStamp = 0;
 
+    private int retriedTimes = 0;
+
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
         mMediaSourceHelper = ExoMediaSourceHelper.getInstance(context);
@@ -61,16 +71,21 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     @Override
     public void initPlayer() {
         if (mRenderersFactory == null) {
-            mRenderersFactory = new DefaultRenderersFactory(mAppContext);
+            mRenderersFactory = new NextRenderersFactory(mAppContext);
         }
-        mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        //https://github.com/androidx/media/blob/release/libraries/decoder_ffmpeg/README.md
+        if ("MiTV-MFTR0".equals(Build.MODEL)) {
+            mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON);
+        }else{
+            mRenderersFactory.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER);
+        }
         if (mTrackSelector == null) {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
         if (mLoadControl == null) {
             mLoadControl = new DefaultLoadControl();
         }
-        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setPreferredTextLanguage("zh").setTunnelingEnabled(true));
+        mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setPreferredTextLanguage(Locale.getDefault().getISO3Language()).setTunnelingEnabled(true));
         /*mMediaPlayer = new ExoPlayer.Builder(
                 mAppContext,
                 mRenderersFactory,
@@ -83,11 +98,13 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         mMediaPlayer = new ExoPlayer.Builder(mAppContext)
                 .setLoadControl(mLoadControl)
                 .setRenderersFactory(mRenderersFactory)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(mAppContext, ExtractorsFactory.EMPTY))
                 .setTrackSelector(mTrackSelector).build();
 
         setOptions();
 
         mMediaPlayer.addListener(this);
+        mMediaSourceHelper.clearSocksProxy();
     }
 
     public DefaultTrackSelector getTrackSelector() {
@@ -207,6 +224,12 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         return mMediaPlayer == null ? 0 : mMediaPlayer.getBufferedPercentage();
     }
 
+    public void setPlayerView(PlayerView view) {
+        if (mMediaPlayer != null) {
+            view.setPlayer(mMediaPlayer);
+        }
+    }
+
     @Override
     public void setSurface(Surface surface) {
         if (mMediaPlayer != null) {
@@ -266,19 +289,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         if (mAppContext == null || unsupported()) {
             return 0;
         }
-        //使用getUidRxBytes方法获取该进程总接收量
-        long total = TrafficStats.getTotalRxBytes();
-        //记录当前的时间
-        long time = System.currentTimeMillis();
-        //数据接收量除以数据接收的时间，就计算网速了。
-        long diff = total - lastTotalRxBytes;
-        long speed = diff / Math.max(time - lastTimeStamp, 1);
-        //当前时间存到上次时间这个变量，供下次计算用
-        lastTimeStamp = time;
-        //当前总接收量存到上次接收总量这个变量，供下次计算用
-        lastTotalRxBytes = total;
-        LOG.e("TcpSpeed", speed * 1024 + "");
-        return speed * 1024;
+        return PlayerUtils.getNetSpeed(mAppContext);
     }
 
     @Override
@@ -317,15 +328,45 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     public void onPlayerError(@NonNull PlaybackException error) {
         errorCode = error.errorCode;
         Log.e("tag--", "" + error.errorCode);
-        if (path != null) {
+        String proxyServer = Hawk.get(HawkConfig.PROXY_SERVER, "");
+        if ("".equals(proxyServer)) {
+            if (retriedTimes == 0) {
+                retriedTimes = 1;
+                setDataSource(path, headers);
+                prepareAsync();
+                start();
+            } else {
+                if (mPlayerEventListener != null) {
+                    mPlayerEventListener.onError(error.errorCode, PlayerHelper.getRootCauseMessage(error));
+                }
+            }
+            return;
+        }
+        String[] proxyServers = proxyServer.split("\\s+|,|;|，");
+        if (retriedTimes > proxyServers.length - 1) {
+            if (mPlayerEventListener != null) {
+                mPlayerEventListener.onError(error.errorCode, PlayerHelper.getRootCauseMessage(error));
+            }
+            return;
+        }
+        String[] ps = proxyServers[retriedTimes].split(":");
+        if (ps.length != 2) {
+            if (mPlayerEventListener != null) {
+                mPlayerEventListener.onError(error.errorCode, PlayerHelper.getRootCauseMessage(error));
+            }
+            return;
+        }
+        try {
+            mMediaSourceHelper.setSocksProxy(ps[0], Integer.parseInt(ps[1]));
+            retriedTimes++;
             setDataSource(path, headers);
-            path = null;
             prepareAsync();
             start();
-        } else {
+        } catch (Exception e) {
             if (mPlayerEventListener != null) {
-                mPlayerEventListener.onError();
+                mPlayerEventListener.onError(error.errorCode, PlayerHelper.getRootCauseMessage(error));
             }
+            return;
         }
     }
 

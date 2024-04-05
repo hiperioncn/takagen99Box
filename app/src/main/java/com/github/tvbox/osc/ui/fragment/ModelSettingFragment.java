@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 
 import com.github.tvbox.osc.R;
@@ -29,7 +30,9 @@ import com.github.tvbox.osc.ui.dialog.BackupDialog;
 import com.github.tvbox.osc.ui.dialog.HomeIconDialog;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.dialog.ShortcutDialog;
+import com.github.tvbox.osc.ui.dialog.ResetDialog;
 import com.github.tvbox.osc.ui.dialog.XWalkInitDialog;
+import com.github.tvbox.osc.util.DefaultConfig;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.HistoryHelper;
@@ -74,11 +77,11 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
     // Player Section
     private TextView tvShowPreviewText;
-    private TextView tvScale;
-    private TextView tvPIP;
+    private TextView tvScale;    
     private TextView tvPlay;
     private TextView tvMediaCodec;
     private TextView tvVideoPurifyText;
+    private TextView tvIjkCachePlay;
 
     // System Section
     private TextView tvLocale;
@@ -87,6 +90,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
     private TextView tvParseWebView;
     private TextView tvSearchView;
     private TextView tvDns;
+    private TextView tvFastSearchText;
 
     public static ModelSettingFragment newInstance() {
         return new ModelSettingFragment().setArguments();
@@ -104,6 +108,8 @@ public class ModelSettingFragment extends BaseLazyFragment {
     @Override
     protected void init() {
         titleLayout = findViewById(R.id.titleLayout);
+    	tvFastSearchText = findViewById(R.id.showFastSearchText);
+        tvFastSearchText.setText(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) ? "已开启" : "已关闭");
         tvDebugOpen = findViewById(R.id.tvDebugOpen);
         tvDebugOpen.setText(Hawk.get(HawkConfig.DEBUG_OPEN, false) ? "开启" : "关闭");
         tvApi = findViewById(R.id.tvApi);
@@ -121,15 +127,15 @@ public class ModelSettingFragment extends BaseLazyFragment {
         tvShowPreviewText = findViewById(R.id.showPreviewText);
         tvShowPreviewText.setText(Hawk.get(HawkConfig.SHOW_PREVIEW, true) ? "开启" : "关闭");
         tvScale = findViewById(R.id.tvScaleType);
-        tvScale.setText(PlayerHelper.getScaleName(Hawk.get(HawkConfig.PLAY_SCALE, 0)));
-        tvPIP = findViewById(R.id.tvPIP);
-        tvPIP.setText(Hawk.get(HawkConfig.PIC_IN_PIC, false) ? "开启" : "关闭");
+        tvScale.setText(PlayerHelper.getScaleName(Hawk.get(HawkConfig.PLAY_SCALE, 0)));        
         tvPlay = findViewById(R.id.tvPlay);
         tvPlay.setText(PlayerHelper.getPlayerName(Hawk.get(HawkConfig.PLAY_TYPE, 0)));
         tvMediaCodec = findViewById(R.id.tvMediaCodec);
         tvMediaCodec.setText(Hawk.get(HawkConfig.IJK_CODEC, ""));
         tvVideoPurifyText = findViewById(R.id.tvVideoPurifyText);
         tvVideoPurifyText.setText(Hawk.get(HawkConfig.VIDEO_PURIFY, true) ? "开启" : "关闭");
+        tvIjkCachePlay = findViewById(R.id.tvIjkCachePlay);
+        tvIjkCachePlay.setText(Hawk.get(HawkConfig.IJK_CACHE_PLAY, false) ? "开启" : "关闭");
         // System Section
         tvLocale = findViewById(R.id.tvLocale);
         tvLocale.setText(getLocaleView(Hawk.get(HawkConfig.HOME_LOCALE, 0)));
@@ -320,14 +326,14 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
                     TvRecyclerView tvRecyclerView = dialog.findViewById(R.id.list);
                     tvRecyclerView.setLayoutManager(new V7GridLayoutManager(dialog.getContext(), spanCount));
-                    LinearLayout cl_root = dialog.findViewById(R.id.cl_root);
+                    ConstraintLayout cl_root = dialog.findViewById(R.id.cl_root);
                     ViewGroup.LayoutParams clp = cl_root.getLayoutParams();
                     if (spanCount != 1) {
                         clp.width = AutoSizeUtils.mm2px(dialog.getContext(), 400 + 260 * (spanCount - 1));
                     }
 
                     dialog.setTip(getString(R.string.dia_source));
-                    dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<SourceBean>() {
+                    dialog.setAdapter(tvRecyclerView, new SelectDialogAdapter.SelectDialogInterface<SourceBean>() {
                         @Override
                         public void click(SourceBean value, int pos) {
                             ApiConfig.get().setSourceBean(value);
@@ -385,7 +391,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(2);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_hm_type));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.HOME_REC, value);
@@ -424,7 +430,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(4);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_history));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.HOME_NUM, value);
@@ -474,7 +480,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 players.add(5);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_ratio));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.PLAY_SCALE, value);
@@ -499,15 +505,41 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
-        // Switch to ON / OFF Picture-In-Picture -------------------------
-        findViewById(R.id.llPIP).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FastClickCheckUtil.check(v);
-                Hawk.put(HawkConfig.PIC_IN_PIC, !Hawk.get(HawkConfig.PIC_IN_PIC, false));
-                tvPIP.setText(Hawk.get(HawkConfig.PIC_IN_PIC, true) ? "开启" : "关闭");
-            }
-        });
+        //后台播放
+        View backgroundPlay = findViewById(R.id.llBackgroundPlay);
+        TextView tvBgPlayType = findViewById(R.id.tvBackgroundPlayType);
+        Integer defaultBgPlayTypePos = Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0);
+        ArrayList<String> bgPlayTypes = new ArrayList<>();
+        bgPlayTypes.add("关闭");
+        bgPlayTypes.add("开启");
+        bgPlayTypes.add("画中画");
+        tvBgPlayType.setText(bgPlayTypes.get(defaultBgPlayTypePos));
+        backgroundPlay.setOnClickListener(view -> {
+            FastClickCheckUtil.check(view);
+            SelectDialog<String> dialog = new SelectDialog<>(mActivity);
+            dialog.setTip("请选择");
+            dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<String>() {
+                @Override
+                public void click(String value, int pos) {
+                    tvBgPlayType.setText(value);
+                    Hawk.put(HawkConfig.BACKGROUND_PLAY_TYPE, pos);
+                }
+                @Override
+                public String getDisplay(String val) {
+                    return val;
+                }
+            }, new DiffUtil.ItemCallback<String>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull @NotNull String oldItem, @NonNull @NotNull String newItem) {
+                    return oldItem.equals(newItem);
+                }
+                @Override
+                public boolean areContentsTheSame(@NonNull @NotNull String oldItem, @NonNull @NotNull String newItem) {
+                    return oldItem.equals(newItem);
+                }
+            }, bgPlayTypes,defaultBgPlayTypePos);
+            dialog.show();
+        });        
         // Select PLAYER Type --------------------------------------------
         findViewById(R.id.llPlay).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -524,7 +556,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 players.add(12);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_player));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.PLAY_TYPE, value);
@@ -570,7 +602,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
                 SelectDialog<IJKCode> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_decode));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<IJKCode>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<IJKCode>() {
                     @Override
                     public void click(IJKCode value, int pos) {
                         value.selected(true);
@@ -600,6 +632,12 @@ public class ModelSettingFragment extends BaseLazyFragment {
             FastClickCheckUtil.check(v);
             Hawk.put(HawkConfig.VIDEO_PURIFY, !Hawk.get(HawkConfig.VIDEO_PURIFY, true));
             tvVideoPurifyText.setText(Hawk.get(HawkConfig.VIDEO_PURIFY, true) ? "开启" : "关闭");
+        });
+        // ijk player cache -------------------------------------
+        findViewById(R.id.llIjkCachePlay).setOnClickListener(v -> {
+            FastClickCheckUtil.check(v);
+            Hawk.put(HawkConfig.IJK_CACHE_PLAY, !Hawk.get(HawkConfig.IJK_CACHE_PLAY, false));
+            tvIjkCachePlay.setText(Hawk.get(HawkConfig.IJK_CACHE_PLAY, false) ? "开启" : "关闭");
         });
         // 3. SYSTEM Configuration -------------------------------------------------------------- //
         // Select Webview ---------------------------------------------
@@ -633,7 +671,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 renders.add(1);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_render));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.PLAY_RENDER, value);
@@ -668,7 +706,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
 
                 SelectDialog<String> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_dns));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<String>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<String>() {
                     @Override
                     public void click(String value, int pos) {
                         tvDns.setText(OkGoHelper.dnsHttpsList.get(pos));
@@ -702,6 +740,15 @@ public class ModelSettingFragment extends BaseLazyFragment {
             public void onClick(View v) {
                 FastClickCheckUtil.check(v);
                 BackupDialog dialog = new BackupDialog(mActivity);
+                dialog.show();
+            }
+        });
+        // resetApp
+        findViewById(R.id.llReset).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                ResetDialog dialog = new ResetDialog(mActivity);
                 dialog.show();
             }
         });
@@ -752,7 +799,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(1);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_search));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.SEARCH_VIEW, value);
@@ -777,6 +824,14 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 dialog.show();
             }
         });
+        findViewById(R.id.showFastSearch).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FastClickCheckUtil.check(v);
+                Hawk.put(HawkConfig.FAST_SEARCH_MODE, !Hawk.get(HawkConfig.FAST_SEARCH_MODE, false));
+                tvFastSearchText.setText(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) ? "已开启" : "已关闭");
+            }
+        });
         // Select App Language ( English / Chinese ) -----------------
         findViewById(R.id.llLocale).setOnClickListener(new View.OnClickListener() {
             private final int chkLang = Hawk.get(HawkConfig.HOME_LOCALE, 0);
@@ -790,7 +845,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(1);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_locale));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.HOME_LOCALE, value);
@@ -841,7 +896,7 @@ public class ModelSettingFragment extends BaseLazyFragment {
                 types.add(6);
                 SelectDialog<Integer> dialog = new SelectDialog<>(mActivity);
                 dialog.setTip(getString(R.string.dia_theme));
-                dialog.setAdapter(new SelectDialogAdapter.SelectDialogInterface<Integer>() {
+                dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<Integer>() {
                     @Override
                     public void click(Integer value, int pos) {
                         Hawk.put(HawkConfig.THEME_SELECT, value);

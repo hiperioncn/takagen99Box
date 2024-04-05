@@ -22,10 +22,12 @@ public class RefreshEvent {
     public static final int TYPE_SUBTITLE_SIZE_CHANGE = 12;
     public static final int TYPE_LIVE_URL_CHANGE = 13;
     public static final int TYPE_EPG_URL_CHANGE = 14;
+    public static final int TYPE_PROXYS_CHANGE = 18;
     public static final int TYPE_APP_REFRESH = 15;
     public static final int TYPE_FILTER_CHANGE = 16;
-
-    public static final int TYPE_PACKAGE_NAME_CHANGE = 17;
+    public static final int TYPE_REFRESH_NOTIFY = 17;
+    //快捷按钮设置包名用
+    public static final int TYPE_PACKAGE_NAME_CHANGE = 50;
     public int type;
     public Object obj;
 
