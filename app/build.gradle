@@ -9,10 +9,10 @@ android {
     compileSdk 33
 
     defaultConfig {
-//        applicationId 'com.github.tvbox.osc.tk'
+        applicationId 'com.github.tvbox.osc.tk'
 //        applicationId 'com.bilibili.bilithings'
-        applicationId 'com.ss.android.ugc.aweme' //抖音
-        applicationId 'com.autonavi.amapauto' //高德
+//        applicationId 'com.ss.android.ugc.aweme' //抖音
+//        applicationId 'com.autonavi.amapauto' //高德
 //        applicationId 'cn.cmvideo.car.play' //咪咕视频
         minSdkVersion 21
         targetSdkVersion 33
