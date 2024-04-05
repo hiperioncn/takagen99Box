@@ -3,57 +3,58 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <!--添加搜索标题，用于实现返回功能-->
-    <LinearLayout
-        android:id="@+id/titleLayout"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/vs_50"
-        android:layout_marginTop="@dimen/vs_20"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingLeft="@dimen/vs_50"
-        android:paddingRight="@dimen/vs_50"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    android:orientation="horizontal">
 
-        <View
-            android:layout_width="@dimen/vs_5"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/vs_8"
-            android:layout_marginEnd="@dimen/vs_12"
-            android:layout_marginRight="@dimen/vs_12"
-            android:layout_marginBottom="@dimen/vs_8"
-            android:background="?attr/color_theme" />
 
-        <TextView
-            android:id="@+id/tvName"
-            android:layout_width="@dimen/vs_0"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="left|center_vertical"
-            android:singleLine="true"
-            android:text="@string/act_search"
-            android:textAlignment="gravity"
-            android:textColor="@color/font_home_selector"
-            android:textSize="@dimen/ts_30"
-            android:textStyle="bold" />
-    </LinearLayout>
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="@dimen/vs_420"
         android:layout_height="match_parent"
-        android:paddingLeft="@dimen/vs_30"
-        android:orientation="horizontal">
-        <!--  搜索键盘等 -->
+        android:orientation="vertical"
+        android:padding="@dimen/vs_20">
+        <!--搜索标题用于返回-->
+        <LinearLayout
+            android:id="@+id/titleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/vs_50"
+            android:layout_marginTop="@dimen/vs_5"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/vs_5"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:layout_width="@dimen/vs_5"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/vs_8"
+                android:layout_marginEnd="@dimen/vs_12"
+                android:layout_marginRight="@dimen/vs_12"
+                android:layout_marginBottom="@dimen/vs_8"
+                android:background="?attr/color_theme" />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="@dimen/vs_0"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:singleLine="true"
+                android:text="@string/act_search"
+                android:textAlignment="gravity"
+                android:textColor="@color/font_home_selector"
+                android:textSize="@dimen/ts_30"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/vs_5"
             android:gravity="center_vertical"
             android:orientation="vertical">
-            	
+
             <TextView
                 android:id="@+id/filterBtn"
                 android:layout_width="match_parent"
@@ -71,164 +72,103 @@
                 android:layout_height="@dimen/vs_50"
                 android:layout_marginTop="@dimen/vs_10"
                 android:orientation="horizontal">
-                	
+
                 <com.github.tvbox.osc.ui.tv.widget.CustomEditText
                     android:id="@+id/etSearch"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/vs_50"
-                    android:layout_marginTop="@dimen/vs_10"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etSearch"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/vs_50"
-                        android:layout_marginEnd="@dimen/vs_10"
-                        android:layout_marginRight="@dimen/vs_10"
-                        android:layout_weight="1"
-                        android:background="@drawable/input_search"
-                        android:hint="@string/act_search_txt"
-                        android:inputType="text"
-                        android:singleLine="true"
-                        android:imeOptions="actionDone"
-                        android:maxLines="1"
-                        android:paddingLeft="@dimen/vs_10"
-                        android:paddingRight="@dimen/vs_10"
-                        android:textColor="@android:color/white"
-                        android:textColorHint="#99FFFFFF"
-                        android:textSize="@dimen/ts_20" />
-
-                    <ImageView
-                        android:id="@+id/tvSearchCheckbox"
-                        android:layout_width="@dimen/vs_50"
-                        android:layout_height="@dimen/vs_50"
-                        android:layout_gravity="center"
-                        android:layout_margin="@dimen/vs_2"
-                        android:background="@drawable/shape_user_focus"
-                        android:focusable="true"
-                        android:padding="@dimen/vs_5"
-                        android:src="@drawable/icon_filter" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/vs_50"
-                    android:layout_marginTop="@dimen/vs_10"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvSearch"
-                        android:layout_width="0mm"
-                        android:layout_height="@dimen/vs_50"
-                        android:layout_weight="1"
-                        android:background="@drawable/shape_user_focus"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:text="@string/act_search"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/ts_20" />
-
-                    <Space
-                        android:layout_width="@dimen/vs_10"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/tvClear"
-                        android:layout_width="0mm"
-                        android:layout_height="@dimen/vs_50"
-                        android:layout_weight="1"
-                        android:background="@drawable/shape_user_focus"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:text="@string/act_search_clr"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/ts_20" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <com.github.tvbox.osc.ui.tv.widget.SearchKeyboard
-                android:id="@+id/keyBoardRoot"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <LinearLayout
-                android:id="@+id/remoteRoot"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvAddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="@dimen/vs_20"
-                    android:gravity="center_horizontal"
-                    android:lineSpacingMultiplier="1.4"
+                    android:layout_marginEnd="@dimen/vs_10"
+                    android:layout_marginRight="@dimen/vs_10"
+                    android:layout_weight="1"
+                    android:background="@drawable/input_search"
+                    android:hint="@string/act_search_txt"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/vs_10"
+                    android:paddingRight="@dimen/vs_10"
                     android:textColor="@android:color/white"
+                    android:textColorHint="#99FFFFFF"
                     android:textSize="@dimen/ts_20" />
 
                 <ImageView
-                    android:id="@+id/ivQRCode"
-                    android:layout_width="300mm"
-                    android:layout_height="300mm"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="20mm" />
+                    android:id="@+id/tvSearchCheckbox"
+                    android:layout_width="@dimen/vs_50"
+                    android:layout_height="@dimen/vs_50"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/vs_2"
+                    android:background="@drawable/shape_user_focus"
+                    android:focusable="true"
+                    android:padding="@dimen/vs_5"
+                    android:src="@drawable/icon_filter" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/vs_50"
+                android:layout_marginTop="@dimen/vs_10"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvSearch"
+                    android:layout_width="0mm"
+                    android:layout_height="@dimen/vs_50"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape_user_focus"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="@string/act_search"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/ts_20" />
+
+                <Space
+                    android:layout_width="@dimen/vs_10"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvClear"
+                    android:layout_width="0mm"
+                    android:layout_height="@dimen/vs_50"
+                    android:layout_weight="1"
+                    android:background="@drawable/shape_user_focus"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="@string/act_search_clr"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/ts_20" />
             </LinearLayout>
         </LinearLayout>
 
-        <!--  热门搜索关键词 -->
+        <com.github.tvbox.osc.ui.tv.widget.SearchKeyboard
+            android:id="@+id/keyBoardRoot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
         <LinearLayout
-            android:id="@+id/llWord"
-            android:layout_width="@dimen/vs_160"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingTop="@dimen/vs_0"
-            android:paddingBottom="@dimen/vs_20">
+            android:id="@+id/remoteRoot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tvAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="@dimen/vs_10"
-                android:text="@string/act_search_trend"
-                android:textAlignment="center"
+                android:layout_marginTop="@dimen/vs_20"
+                android:gravity="center_horizontal"
+                android:lineSpacingMultiplier="1.4"
                 android:textColor="@android:color/white"
-                android:textSize="@dimen/ts_22" />
+                android:textSize="@dimen/ts_20" />
 
-            <com.owen.tvrecyclerview.widget.TvRecyclerView
-                android:id="@+id/mGridViewWord"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-                app:tv_selectedItemIsCentered="true"
-                app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
-        </LinearLayout>
-
-        <!--  搜索结果 -->
-        <LinearLayout
-            android:id="@+id/llLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/vs_20"
-            android:paddingTop="@dimen/vs_0"
-            android:paddingRight="@dimen/vs_20"
-            android:paddingBottom="@dimen/vs_20">
-
-            <com.owen.tvrecyclerview.widget.TvRecyclerView
-                android:id="@+id/mGridView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:visibility="invisible"
-                app:tv_horizontalSpacingWithMargins="@dimen/vs_5"
-                app:tv_selectedItemIsCentered="true"
-                app:tv_verticalSpacingWithMargins="@dimen/vs_5" />
+            <ImageView
+                android:id="@+id/ivQRCode"
+                android:layout_width="300mm"
+                android:layout_height="300mm"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20mm" />
         </LinearLayout>
     </LinearLayout>
 
@@ -240,7 +180,7 @@
         android:paddingTop="@dimen/vs_20"
         android:paddingBottom="@dimen/vs_20">
 
-        <TextView           
+        <TextView
             android:id="@+id/mHotSearch_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -268,7 +208,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="@dimen/vs_20">
-        
+
         <RelativeLayout
             android:id="@+id/search_tips"
             android:layout_width="match_parent"
@@ -284,7 +224,7 @@
                 android:textSize="@dimen/ts_22"
                 android:text="搜索历史" />
 
-            <ImageView                
+            <ImageView
                 android:id="@+id/clear_history"
                 android:layout_width="@dimen/vs_50"
                 android:layout_height="@dimen/vs_50"
@@ -293,7 +233,7 @@
                 android:focusable="true"
                 android:focusableInTouchMode="false"
                 android:padding="@dimen/vs_5"
-                android:layout_marginRight="@dimen/vs_20"              
+                android:layout_marginRight="@dimen/vs_20"
                 android:src="@drawable/icon_delete"
                 android:layout_alignParentRight="true" />
         </RelativeLayout>
@@ -311,7 +251,7 @@
             app:itemSize="@dimen/vs_20"
             app:textPaddingH="@dimen/vs_20"
             app:textPaddingV="@dimen/vs_10"
-            app:verticalSpacing="@dimen/vs_20" />        
+            app:verticalSpacing="@dimen/vs_20" />
 
         <com.owen.tvrecyclerview.widget.TvRecyclerView
             android:id="@+id/mGridView"

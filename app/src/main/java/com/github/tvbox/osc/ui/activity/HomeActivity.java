@@ -74,6 +74,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -188,8 +189,8 @@ public class HomeActivity extends BaseActivity {
                     textView.getPaint().setFakeBoldText(true);
                     textView.setTextColor(HomeActivity.this.getResources().getColor(R.color.color_FFFFFF));
                     textView.invalidate();
-//                    if (!sortAdapter.getItem(position).filters.isEmpty())
-//                        view.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
+                    //                    if (!sortAdapter.getItem(position).filters.isEmpty())
+                    //                        view.findViewById(R.id.tvFilter).setVisibility(View.VISIBLE);
                     if (position == -1) {
                         position = 0;
                         HomeActivity.this.mGridView.setSelection(0);
@@ -262,7 +263,7 @@ public class HomeActivity extends BaseActivity {
             public void onClick(View view) {
                 try {
                     startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                }catch (Exception ignored){
+                } catch (Exception ignored) {
                 }
             }
         });
@@ -326,7 +327,7 @@ public class HomeActivity extends BaseActivity {
         setLoadSir(this.contentLayout);
         //mHandler.postDelayed(mFindFocus, 250);
     }
-    
+
     public static boolean reHome(Context appContext) {
         Intent intent = new Intent(appContext, HomeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -336,11 +337,12 @@ public class HomeActivity extends BaseActivity {
         appContext.startActivity(intent);
         return true;
     }
-    
+
     public static void homeRecf() { //站点切换
         int homeRec = Hawk.get(HawkConfig.HOME_REC, -1);
         int limit = 2;
-        if (homeRec == limit) homeRec = -1;
+        if (homeRec == limit)
+            homeRec = -1;
         homeRec++;
         Hawk.put(HawkConfig.HOME_REC, homeRec);
     }
@@ -416,7 +418,7 @@ public class HomeActivity extends BaseActivity {
             }
             if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
                 jumpActivity(LivePlayActivity.class);
-            }         
+            }
             return;
         }
         showLoading();
@@ -430,9 +432,9 @@ public class HomeActivity extends BaseActivity {
                             @Override
                             public void run() {
                                 if (!useCacheConfig) {
-//                                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
-//                                        jumpActivity(LivePlayActivity.class);
-//                                    }
+                                    //                                    if (Hawk.get(HawkConfig.HOME_DEFAULT_SHOW, false)) {
+                                    //                                        jumpActivity(LivePlayActivity.class);
+                                    //                                    }
                                     Toast.makeText(HomeActivity.this, getString(R.string.hm_ok), Toast.LENGTH_SHORT).show();
                                 }
                                 initData();

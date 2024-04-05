@@ -102,7 +102,6 @@ import com.lzy.okgo.model.Response;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 import com.orhanobut.hawk.Hawk;
 
-import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -183,7 +182,7 @@ public class PlayActivity extends BaseActivity {
                         setTip("加载完成，嗅探视频中", true, false);
                     }
                 } else if (msg.what == 300) {
-                    setTip((String)msg.obj, false, true);
+                    setTip((String) msg.obj, false, true);
                 }
                 return false;
             }
@@ -199,7 +198,8 @@ public class PlayActivity extends BaseActivity {
         ProgressManager progressManager = new ProgressManager() {
             @Override
             public void saveProgress(String url, long progress) {
-                if (videoDuration == 0) return;
+                if (videoDuration == 0)
+                    return;
                 CacheManager.save(MD5.string2MD5(url), progress);
             }
 
@@ -405,7 +405,7 @@ public class PlayActivity extends BaseActivity {
     }
 
     void setSubtitleViewTextStyle(int style) {
-        SubtitleHelper.upTextStyle(mController.mSubtitleView,style);
+        SubtitleHelper.upTextStyle(mController.mSubtitleView, style);
     }
 
     void selectMyInternalSubtitle() {
@@ -568,7 +568,8 @@ public class PlayActivity extends BaseActivity {
         Intent i = new Intent();
         i.addCategory(Intent.CATEGORY_DEFAULT);
         i.setAction(android.content.Intent.ACTION_VIEW);
-        if (videoURL == null) return;
+        if (videoURL == null)
+            return;
         i.setDataAndType(Uri.parse(videoURL), "video/*");
         startActivity(Intent.createChooser(i, "Open Video with ..."));
     }
@@ -612,7 +613,8 @@ public class PlayActivity extends BaseActivity {
             int st = url.indexOf("&url=");
             if (st > 1) {
                 String[] urls = url.substring(st + 5).split("\\|");
-                if (urls.length < 2) return false;
+                if (urls.length < 2)
+                    return false;
                 stopLoadWebView(false);
                 videoSegmentationURL.clear();
                 videoSegmentationURL.addAll(Arrays.asList(urls));
@@ -848,7 +850,7 @@ public class PlayActivity extends BaseActivity {
                             subtitle.content = ss.toString();
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
-                    }else {
+                    } else {
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = "";
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
@@ -1297,7 +1299,8 @@ public class PlayActivity extends BaseActivity {
         stopParse();
 
         initParseLoadFound();
-        if (mVideoView != null) mVideoView.release();
+        if (mVideoView != null)
+            mVideoView.release();
         subtitleCacheKey = mVodInfo.sourceKey + "-" + mVodInfo.id + "-" + mVodInfo.playFlag + "-" + mVodInfo.getplayIndex() + "-" + vs.name + "-subt";
         progressKey = mVodInfo.sourceKey + mVodInfo.id + mVodInfo.playFlag + mVodInfo.getplayIndex();
         //重新播放清除现有进度
@@ -1961,7 +1964,8 @@ public class PlayActivity extends BaseActivity {
             }
 
             if (!ad) {
-                if (yxdm(url, headers)) return null;
+                if (yxdm(url, headers))
+                    return null;
                 if (checkVideoFormat(url)) {
                     loadFoundVideoUrls.add(url);
                     loadFoundVideoUrlsHeader.put(url, headers);

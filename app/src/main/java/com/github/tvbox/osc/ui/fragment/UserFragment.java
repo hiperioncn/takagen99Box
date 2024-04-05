@@ -147,7 +147,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 if (ApiConfig.get().getSourceBeanList().isEmpty())
                     return;
                 Movie.Video vod = ((Movie.Video) adapter.getItem(position));
-
+                //                Toast.makeText(mContext, "click:" + vod.name, Toast.LENGTH_SHORT).show();
                 // takagen99: CHeck if in Delete Mode
                 if ((vod.id != null && !vod.id.isEmpty()) && (Hawk.get(HawkConfig.HOME_REC, 0) == 2) && HawkConfig.hotVodDelete) {
                     homeHotVodAdapter.remove(position);
@@ -159,6 +159,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                     bundle.putString("id", vod.id);
                     bundle.putString("sourceKey", vod.sourceKey);
                     if (vod.id.startsWith("msearch:")) {
+                        //                        Toast.makeText(mContext, "msearch click:" + vod.name, Toast.LENGTH_SHORT).show();
                         bundle.putString("title", vod.name);
                         jumpActivity(FastSearchActivity.class, bundle);
                     } else {
@@ -166,9 +167,10 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                     }
                 } else {
                     Intent newIntent;
-                    if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)){
+                    if (Hawk.get(HawkConfig.FAST_SEARCH_MODE, false)) {
                         newIntent = new Intent(mContext, FastSearchActivity.class);
-                    }else {
+                    } else {
+                        //                        Toast.makeText(mContext, "SearchActivity:" + vod.name, Toast.LENGTH_SHORT).show();
                         newIntent = new Intent(mContext, SearchActivity.class);
                     }
                     newIntent.putExtra("title", vod.name);
@@ -197,15 +199,15 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 return true;
             }
         });
-        
+
         tvHistory.setOnLongClickListener(new View.OnLongClickListener() {
-        	@Override
+            @Override
             public boolean onLongClick(View v) {
                 HomeActivity.homeRecf();
                 return HomeActivity.reHome(mContext);
             }
         });
-        
+
         // Grid View
         tvHotListForGrid.setOnItemListener(new TvRecyclerView.OnItemListener() {
             @Override
@@ -314,7 +316,7 @@ public class UserFragment extends BaseLazyFragment implements View.OnClickListen
                 Movie.Video vod = new Movie.Video();
                 vod.name = obj.get("title").getAsString();
                 vod.note = obj.get("rate").getAsString();
-                vod.pic = obj.get("cover").getAsString() + "@User-Agent=" + UA.random() + "@Referer=https://www.douban.com/";                
+                vod.pic = obj.get("cover").getAsString() + "@User-Agent=" + UA.random() + "@Referer=https://www.douban.com/";
                 result.add(vod);
             }
         } catch (Throwable th) {

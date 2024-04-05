@@ -5,10 +5,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
 import com.blankj.utilcode.util.GsonUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.github.tvbox.osc.R;
@@ -79,7 +81,7 @@ public class GridFragment extends BaseLazyFragment {
     protected int getLayoutResID() {
         return R.layout.fragment_grid;
     }
-    
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,11 +96,11 @@ public class GridFragment extends BaseLazyFragment {
         initViewModel();
         initData();
     }
-    
+
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("sortDataJson", GsonUtils.toJson(sortData));        
+        outState.putString("sortDataJson", GsonUtils.toJson(sortData));
     }
 
     private void changeView(String id) {
@@ -118,12 +120,15 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     // 是否允许聚合搜索 sortData.flag的第二个字符为‘1’时允许聚搜
-    public boolean enableFastSearch() {  return sortData.flag == null || sortData.flag.length() < 2 || (sortData.flag.charAt(1) == '1'); }
+    public boolean enableFastSearch() {
+        return sortData.flag == null || sortData.flag.length() < 2 || (sortData.flag.charAt(1) == '1');
+    }
     //public boolean enableFastSearch() {  return (sortData.flag == null || sortData.flag.length() < 2) ? true : (sortData.flag.charAt(1) == '1'); }
 
     // 保存当前页面
     private void saveCurrentView() {
-        if (this.mGridView == null) return;
+        if (this.mGridView == null)
+            return;
         GridInfo info = new GridInfo();
         info.sortID = this.sortData.id;
         info.mGridView = this.mGridView;
@@ -137,7 +142,8 @@ public class GridFragment extends BaseLazyFragment {
 
     // 丢弃当前页面，将页面还原成上一个保存的页面
     public boolean restoreView() {
-        if (mGrids.empty()) return false;
+        if (mGrids.empty())
+            return false;
         this.showSuccess();
         ((ViewGroup) mGridView.getParent()).removeView(this.mGridView); // 重父窗口移除当前控件
         GridInfo info = mGrids.pop();// 还原上次保存的控件
@@ -149,8 +155,9 @@ public class GridFragment extends BaseLazyFragment {
         this.isLoad = info.isLoad;
         this.focusedView = info.focusedView;
         this.mGridView.setVisibility(View.VISIBLE);
-//        if(this.focusedView != null){ this.focusedView.requestFocus(); }
-        if (mGridView != null) mGridView.requestFocus();
+        //        if(this.focusedView != null){ this.focusedView.requestFocus(); }
+        if (mGridView != null)
+            mGridView.requestFocus();
         return true;
     }
 
@@ -226,15 +233,15 @@ public class GridFragment extends BaseLazyFragment {
                     Bundle bundle = new Bundle();
                     bundle.putString("id", video.id);
                     bundle.putString("sourceKey", video.sourceKey);
-                    bundle.putString("title", video.name);                    
+                    bundle.putString("title", video.name);
                     if (("12".indexOf(getUITag()) != -1) && video.tag.equals("folder")) {
                         focusedView = view;
                         changeView(video.id);
                     } else {
                         if (video.id == null || video.id.isEmpty() || video.id.startsWith("msearch:")) {
-                            if(Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) && enableFastSearch()){
+                            if (Hawk.get(HawkConfig.FAST_SEARCH_MODE, false) && enableFastSearch()) {
                                 jumpActivity(FastSearchActivity.class, bundle);
-                            }else {
+                            } else {
                                 jumpActivity(SearchActivity.class, bundle);
                             }
                         } else {
@@ -273,7 +280,7 @@ public class GridFragment extends BaseLazyFragment {
         sourceViewModel.listResult.observe(this, new Observer<AbsXml>() {
             @Override
             public void onChanged(AbsXml absXml) {
-//                if(mGridView != null) mGridView.requestFocus();
+                //                if(mGridView != null) mGridView.requestFocus();
                 if (absXml != null && absXml.movie != null && absXml.movie.videoList != null && absXml.movie.videoList.size() > 0) {
                     if (page == 1) {
                         showSuccess();
@@ -312,7 +319,7 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     private void initData() {
-    	if (ApiConfig.get().getHomeSourceBean().getApi()==null) {
+        if (ApiConfig.get().getHomeSourceBean().getApi() == null) {
             showEmpty();
             return;
         }
@@ -340,7 +347,7 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     public void showFilter() {
-    	if (sortData!=null && !sortData.filters.isEmpty() && gridFilterDialog == null) {
+        if (sortData != null && !sortData.filters.isEmpty() && gridFilterDialog == null) {
             gridFilterDialog = new GridFilterDialog(mContext);
             gridFilterDialog.setData(sortData);
             gridFilterDialog.setOnDismiss(new GridFilterDialog.Callback() {
