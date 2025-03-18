@@ -8,30 +8,30 @@ public class StorageDriveType {
         LOCAL,
         WEBDAV,
         ALISTWEB,
-        //SMB
+        SMB
     }
 
     public static String[] getTypeNames() {
-        return new String[] {
+        return new String[]{
                 "本地目录",
                 "Webdav",
-                "Alist网页"
-                //"服务器消息块"
+                "Alist网页",
+                "SMB共享"
         };
     }
 
     public static boolean isVideoType(String type) {
-        if(type == null || type.length() == 0)
+        if (type == null || type.length() == 0)
             return false;
         type = type.toUpperCase(Locale.ROOT).trim();
         for (String videoType : videoTypes) {
-            if(videoType.equals(type))
+            if (videoType.equals(type))
                 return true;
         }
         return false;
     }
 
-    private static final String[] videoTypes = new String[] {
+    private static final String[] videoTypes = new String[]{
             "264",
             "264",
             "3G2",

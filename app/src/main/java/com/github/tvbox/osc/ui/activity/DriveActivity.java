@@ -1,11 +1,18 @@
 package com.github.tvbox.osc.ui.activity;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.storage.StorageManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -54,6 +61,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +103,39 @@ public class DriveActivity extends BaseActivity {
     protected void init() {
         initView();
         initData();
+        handleSendIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 在这里处理Intent
+        handleSendIntent(intent);
+    }
+
+    private void handleSendIntent(Intent intent) {
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_VIEW.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                // 处理文本
+                String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (sharedText != null) {
+                    Log.d("########", "handleSendIntent: " + sharedText);
+                    // 使用sharedText
+                }
+            } else if (type.startsWith("image/")) {
+                // 处理图片
+                //                handleSharedImage(intent);
+            } else if (type.startsWith("video")) {
+                Uri uri = intent.getData();
+                if (uri != null) {
+                    Log.d("########", "action: " + action + " type:" + type + " uri:" + uri.toString());
+                    playFile(uri.toString());
+                }
+            }
+        }
     }
 
     private void initView() {
@@ -161,6 +204,9 @@ public class DriveActivity extends BaseActivity {
                             dialog.dismiss();
                         } else if (value == StorageDriveType.TYPE.ALISTWEB) {
                             openAlistDriveDialog(null);
+                            dialog.dismiss();
+                        } else if (value == StorageDriveType.TYPE.SMB) {
+                            getStoragePath(mContext, true);
                             dialog.dismiss();
                         }
                     }
@@ -281,17 +327,19 @@ public class DriveActivity extends BaseActivity {
         VodInfo vodInfo = new VodInfo();
         vodInfo.name = "存储";
         vodInfo.playFlag = "drive";
-        DriveFolderFile currentDrive = viewModel.getCurrentDrive();
-        if (currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
-            String credentialStr = currentDrive.getWebDAVBase64Credential();
-            if (credentialStr != null) {
-                JsonObject playerConfig = new JsonObject();
-                JsonArray headers = new JsonArray();
-                JsonElement authorization = JsonParser.parseString(
-                        "{ \"name\": \"authorization\", \"value\": \"Basic " + credentialStr + "\" }");
-                headers.add(authorization);
-                playerConfig.add("headers", headers);
-                vodInfo.playerCfg = playerConfig.toString();
+        if (viewModel != null) {
+            DriveFolderFile currentDrive = viewModel.getCurrentDrive();
+            if (currentDrive != null && currentDrive.getDriveType() == StorageDriveType.TYPE.WEBDAV) {
+                String credentialStr = currentDrive.getWebDAVBase64Credential();
+                if (credentialStr != null) {
+                    JsonObject playerConfig = new JsonObject();
+                    JsonArray headers = new JsonArray();
+                    JsonElement authorization = JsonParser.parseString(
+                            "{ \"name\": \"authorization\", \"value\": \"Basic " + credentialStr + "\" }");
+                    headers.add(authorization);
+                    playerConfig.add("headers", headers);
+                    vodInfo.playerCfg = playerConfig.toString();
+                }
             }
         }
         vodInfo.seriesFlags = new ArrayList<>();
@@ -347,6 +395,60 @@ public class DriveActivity extends BaseActivity {
         }
     };
 
+    //    测试获取u盘或sd目录
+    @NonNull
+    public String getStoragePath(Context context, boolean isRemovable) {
+        StorageManager storageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+        Class<?> storageVolumeClazz = null;
+        try {
+            storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            Method getVolumeList = storageManager.getClass().getMethod("getVolumeList");
+            Method getPath = storageVolumeClazz.getMethod("getPath");
+            Method isRemovableMtd = storageVolumeClazz.getMethod("isRemovable");
+            Object result = getVolumeList.invoke(storageManager);
+            final int length = Array.getLength(result);
+            List<String> msgList = new ArrayList<>();
+            msgList.add("---length--" + length);
+            for (int i = 0; i < length; i++) {
+                Object storageVolumeElement = Array.get(result, i);
+                msgList.add("---Object--" + storageVolumeElement + "i==" + i);
+                String path = (String) getPath.invoke(storageVolumeElement);
+                msgList.add("---path_total--" + path);
+                boolean removable = (Boolean) isRemovableMtd.invoke(storageVolumeElement);
+                if (isRemovable == removable) {
+                    msgList.add("---path removable--" + path);
+                    return path;
+                }
+            }
+
+            //使用dialog显示打印内容
+            int sort = Hawk.get(HawkConfig.STORAGE_DRIVE_SORT, 0);
+            SelectDialog<String> dialog = new SelectDialog<>(DriveActivity.this);
+            dialog.setTip("获取外部存储打印" + msgList.size());
+            dialog.setAdapter(null, new SelectDialogAdapter.SelectDialogInterface<String>() {
+                @Override
+                public void click(String value, int pos) {
+                    dialog.dismiss();
+                }
+
+                @Override
+                public String getDisplay(String val) {
+                    return val;
+                }
+            }, null, msgList, sort);
+            dialog.show();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
     private void openFilePicker() {
         if (delMode) {
             toggleDelMode();
@@ -357,6 +459,7 @@ public class DriveActivity extends BaseActivity {
                 .titleFollowsDir(true)
                 .displayPath(true)
                 .enableDpad(true)
+                //                .withStartFile("/")
                 .withFilter(true, true)
                 .withChosenListener(new ChooserDialog.Result() {
                     @Override
@@ -531,7 +634,7 @@ public class DriveActivity extends BaseActivity {
     public void onBackPressed() {
         if (viewModel != null) {
             cancel();
-//            mGridView.onClick(mGridView.getChildAt(0));
+            //            mGridView.onClick(mGridView.getChildAt(0));
             returnPreviousFolder();
             return;
         }
